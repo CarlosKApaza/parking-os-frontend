@@ -43,7 +43,7 @@ El modo predeterminado es **demo**. No realiza solicitudes a tu backend. Los dat
 
 Las reservas futuras no ocupan una plaza antes de su horario. El estado físico tiene prioridad sobre la reserva comercial. Las reservas vencidas pasan a historial, y un ticket ya pagado no descuenta saldo por segunda vez. Son comprobaciones locales para la demo, no sustituyen transacciones ni autorización del servidor.
 
-En **Perfil → Herramientas de demostración** puedes alternar P2 y simular pérdida de señal. La pérdida de señal convierte todas las plazas en «Sin confirmar», nunca en «Libre».
+Cuando la ocupación está en modo demo, en **Perfil → Herramientas de demostración** puedes alternar P2 y simular pérdida de señal. La pérdida de señal convierte todas las plazas en «Sin confirmar», nunca en «Libre». Este simulador se oculta cuando se usan lecturas reales de MySQL.
 
 ### Ver estacionamientos reales con el backend actual
 
