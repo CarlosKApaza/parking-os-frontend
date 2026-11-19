@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createDemo, demoSchema, displayStatus, payDemoTicket, reservationStatus, spaceCodes, validateBooking, type BookingInput, type DemoState, type Space } from '@/lib/model'
-import { isDemo, unknownSpaces } from '@/services/parking'
+import { isDemo, isLiveOccupancy, unknownSpaces } from '@/services/parking'
 import { useParking } from '@/hooks/use-parking'
 
 const STORAGE_KEY = 'parkingos:demo:v1'
@@ -37,8 +37,8 @@ function useStore() {
     current.current = next; setDemo(next)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)) } catch { setNotice('Los cambios duran esta sesión: el almacenamiento local no está disponible.') }
   }
-  const confirmed = isDemo ? !simulatedOffline : online && real.connection === 'online'
-  const spaces: Space[] = !confirmed ? unknownSpaces() : isDemo ? spaceCodes.map((id, i) => ({ id, occupancy: demo.occupancy[i], updatedAt: now.toISOString() })) : real.spaces
+  const confirmed = isLiveOccupancy ? online && real.connection === 'online' : !simulatedOffline
+  const spaces: Space[] = !confirmed ? unknownSpaces() : isLiveOccupancy ? real.spaces : spaceCodes.map((id, i) => ({ id, occupancy: demo.occupancy[i], updatedAt: now.toISOString() }))
   const reservations = isDemo ? demo.reservations.map(r => ({ ...r, status: reservationStatus(r, now) })) : []
   const statusOf = (space: Space) => displayStatus(space, reservations, now)
   const stats = { free: 0, occupied: 0, reserved: 0, unknown: 0 }
@@ -51,9 +51,9 @@ function useStore() {
     setNotice(`Reserva de prueba ${id} creada`)
     return id
   }
-  return { demo, update, now, isDemo, spaces, reservations, statusOf, stats, confirmed, online, notice, setNotice,
-    connectionMessage: isDemo ? simulatedOffline ? 'Simulación sin señal. Las plazas no están confirmadas.' : 'Datos de demostración' : real.message,
-    reconnect: isDemo ? () => setSimulatedOffline(false) : real.reconnect,
+  return { demo, update, now, isDemo, isLiveOccupancy, spaces, reservations, statusOf, stats, confirmed, online, notice, setNotice,
+    connectionMessage: isLiveOccupancy ? real.message : simulatedOffline ? 'Simulación sin señal. Las plazas no están confirmadas.' : 'Datos de demostración',
+    reconnect: isLiveOccupancy ? real.reconnect : () => setSimulatedOffline(false),
     simulatedOffline, setSimulatedOffline, book,
     resetDemo: () => { update(() => createDemo()); setSimulatedOffline(false); setNotice('La demostración vuelve a empezar') },
     cancel: (id: string) => { update(s => ({ ...s, reservations: s.reservations.map(r => r.id === id ? { ...r, status: 'cancelled' } : r) })); setNotice('Reserva cancelada') },

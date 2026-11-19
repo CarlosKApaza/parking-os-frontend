@@ -33,3 +33,13 @@
 @media(min-width:761px){.home-primary>.wallet-card{grid-column:1;grid-row:1}.home-primary>.quick-pay-card{grid-column:2;grid-row:1}.home-primary>.availability-section{grid-column:1/-1;grid-row:2;margin-top:7px}}
 @media(max-width:760px){.home-primary>.wallet-card{margin-bottom:0}.home-primary>.availability-section{margin-top:25px;margin-bottom:24px}.home-primary>.quick-pay-card{margin-top:0}}
 @media(max-width:760px){.booking-summary{grid-row:auto}}
+
+/* El pago QR es la acción principal en móvil y permanece visible en la barra inferior. */
+.desktop-nav .pay-nav-link{color:#c5d6ff;background:#5279ff12}
+.desktop-nav .pay-nav-link>svg{color:#91b2ff}
+@media(max-width:760px){
+  .bottom-nav-link.pay-nav-link{gap:2px;color:#dce7ff;background:transparent;font-size:9px;font-weight:750}
+  .bottom-nav-link.pay-nav-link>svg{width:46px;height:46px;margin-top:-14px;padding:11px;border:1px solid #8aa7ff;background:linear-gradient(145deg,#628cff,#476ee5);border-radius:15px;box-shadow:0 6px 19px #4772eb77;color:#fff}
+  .bottom-nav-link.pay-nav-link.active{color:#fff;background:transparent}
+  .bottom-nav-link.pay-nav-link:focus-visible{outline:2px solid #c0d4ff;outline-offset:2px}
+}

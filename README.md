@@ -35,7 +35,7 @@ La vista previa de producción está en **http://127.0.0.1:4173/**. No abras `di
 | `/perfil` | Nombre de demo, accesos y simulador de sensor/conectividad |
 | `/vehiculos` | Alta y eliminación de vehículos ficticios, con placas sin verificar |
 
-La navegación es inferior en móvil y lateral en escritorio. Los diálogos usan Radix/shadcn, gestionan el foco y pueden cerrarse con Escape. Se respeta la preferencia de movimiento reducido.
+La navegación es inferior en móvil y lateral en escritorio. En móvil el acceso a **Pagar** queda en el centro; **Mis reservas** continúa disponible desde Perfil. Los diálogos usan Radix/shadcn, gestionan el foco y pueden cerrarse con Escape. Se respeta la preferencia de movimiento reducido.
 
 ## Demo e integración
 
@@ -45,39 +45,39 @@ Las reservas futuras no ocupan una plaza antes de su horario. El estado físico 
 
 En **Perfil → Herramientas de demostración** puedes alternar P2 y simular pérdida de señal. La pérdida de señal convierte todas las plazas en «Sin confirmar», nunca en «Libre».
 
-Cuando el contrato del servidor esté listo, copia `.env.example` a `.env.local`, configura las direcciones y cambia:
+### Ver estacionamientos reales con el backend actual
+
+Inicia MySQL y `servidor_backend` (`npm run start:dev`), luego copia `.env.example` a `.env.local` y configura:
 
 ```dotenv
-VITE_DATA_MODE=live
-VITE_API_URL=http://localhost:3000
-VITE_SPACES_PATH=/api/spaces
-VITE_SOCKET_URL=http://localhost:3000
-VITE_SOCKET_PATH=/socket.io
-VITE_PARKING_EVENT=parking.updated
-VITE_DEVICE_EVENT=device.status
-VITE_STALE_AFTER_MS=30000
+VITE_DATA_MODE=demo
+VITE_OCCUPANCY_MODE=live
+VITE_API_URL=
+VITE_SPACES_PATH=/api/estacionamientos
+VITE_POLL_INTERVAL_MS=3000
+VITE_STALE_AFTER_MS=90000
 ```
 
-Reinicia Vite al cambiar variables. Las variables `VITE_` son públicas: no deben contener secretos. En `live`, la aplicación consulta la disponibilidad real y desactiva las operaciones comerciales de demo. No mezcla saldo ni reservas ficticias con datos reales. Las cuentas reales, reservas, pagos, permisos de cámara y vehículos requieren sus correspondientes servicios.
+Ejecuta `npm run dev` y abre `http://127.0.0.1:5173`. Reinicia Vite al cambiar variables. Las variables `VITE_` son públicas: no deben contener secretos.
+
+Con esta combinación, **las plazas vienen de MySQL**, mientras que billetera, reservas y pago permanecen expresamente en modo de demostración. Las reservas de prueba no se guardan en MySQL. La PWA consulta la disponibilidad por HTTP cada 3 segundos: todavía no necesita WebSocket.
+
+Durante el desarrollo, Vite reenvía las consultas de `/api/estacionamientos` a `http://127.0.0.1:3000/estacionamientos`. Esto evita modificar CORS en el backend para la demostración local. En producción habrá que configurar un proxy real o CORS y una URL accesible. `localhost` en un teléfono no apunta al PC.
 
 ### Contrato preparado de solo lectura
 
-`GET /api/spaces` puede devolver una lista directamente o `{ "spaces": [...] }` / `{ "data": [...] }`:
+El backend actual responde en `GET /estacionamientos` con los campos de Prisma:
 
 ```json
 [
-  { "code": "P1", "occupancyStatus": "FREE", "updatedAt": "2026-10-11T12:00:00Z", "sequence": 1 },
-  { "code": "P2", "occupancyStatus": "OCCUPIED", "updatedAt": "2026-10-11T12:00:00Z", "sequence": 2 }
+  { "codigo": "P1", "sensorCodigo": "IR01", "estado": "LIBRE", "activo": true, "ultimaLectura": "2026-11-19T12:00:00Z" },
+  { "codigo": "P2", "sensorCodigo": "IR02", "estado": "OCUPADO", "activo": true, "ultimaLectura": "2026-11-19T12:00:00Z" }
 ]
 ```
 
-Envía las siete plazas. Las ausentes aparecen sin confirmar. El adaptador acepta identificadores `code`, `spaceId` o `id` con valores P1–P7; estados físicos `physicalOccupancy`, `occupancyStatus`, `occupancy_status` o `status`; fechas `updatedAt`, `updated_at` o `timestamp`. Solo `FREE` y `OCCUPIED` se consideran estados físicos confirmados; otros valores son `UNKNOWN`. Si tus identificadores son numéricos, entrega además `code` o adapta `src/services/parking.ts`.
+El adaptador también acepta el contrato inglés anterior (`code`, `status`, `FREE`, `OCCUPIED`). Siempre conserva siete plazas; las ausentes, deshabilitadas o desconocidas se muestran **Sin confirmar**. Para los sensores registrados con `sensorCodigo`, si `ultimaLectura` supera 90 segundos se invalida su estado: una lectura vieja nunca se presenta como disponibilidad confirmada. El firmware reporta cada 30 segundos cuando está en línea.
 
-El evento `parking.updated` acepta una plaza con ese mismo formato o una lista. El evento `device.status` acepta `{ "status": "online" }`, `{ "status": "offline" }`, equivalentes `connected`/`disconnected`, `connectivity`, o `{ "online": true }`. Solo publica online cuando los sensores estén realmente disponibles.
-
-La conexión Socket.IO fuerza una consulta REST inicial y otra al reconectar. Los eventos que llegan durante la consulta se conservan y se concilian con el snapshot. Se descartan secuencias repetidas/anteriores y timestamps atrasados. Se asume una secuencia creciente por plaza dentro de la sesión; el snapshot de reconexión permite restablecerla tras reiniciar el servidor.
-
-Sin eventos ni heartbeat durante el tiempo configurado, la interfaz invalida la disponibilidad y espera la siguiente señal. El heartbeat debería ser más frecuente que `VITE_STALE_AFTER_MS`. El servidor debe configurar CORS para el origen del frontend. No se realizó ninguna modificación ni prueba contra `servidor_backend`; el adaptador sigue el contrato propuesto en los documentos y debe contrastarse con la API definitiva.
+WebSockets y el estado individual de conexión del ESP32 quedan pendientes para la siguiente etapa. No se hicieron cambios al backend ni al firmware para esta integración.
 
 ## PWA
 
@@ -97,10 +97,10 @@ No incluye panel administrativo, backend, firmware, pasarela bancaria, cámara/l
 src/
   components/       Navegación, plano auxiliar, piezas compartidas y UI shadcn
   context/          Estado y operaciones de demo
-  hooks/            Conexión Socket.IO e instalación PWA
+  hooks/            Consulta periódica REST e instalación PWA
   lib/              Tipos, reglas de reservas, pago idempotente y utilidades
   pages/            Pantallas del cliente
-  services/         Adaptador REST/Socket.IO configurable
+  services/         Adaptador REST para NestJS y compatibilidad de estados
   styles.css        Diseño y breakpoints móviles
 public/             Identidad e iconos PWA locales
 tests/              Validación de reglas y normalización de datos

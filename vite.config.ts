@@ -29,9 +29,20 @@ export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: {
     rollupOptions: {
-      output: { manualChunks: { motion: ['motion/react'], realtime: ['socket.io-client'], validation: ['zod'] } },
+      output: { manualChunks: { motion: ['motion/react'], validation: ['zod'] } },
     },
   },
-  server: { port: 5173, strictPort: true },
+  server: {
+    port: 5173,
+    strictPort: true,
+    // Solo desarrollo: el navegador llama al mismo origen y Vite reenvía a NestJS.
+    proxy: {
+      '/api/estacionamientos': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, ''),
+      },
+    },
+  },
   preview: { port: 4173, strictPort: true },
 })

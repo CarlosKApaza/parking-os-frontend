@@ -26,6 +26,24 @@ describe('disponibilidad y reservas', () => {
   })
 })
 describe('contrato de lectura REST y Socket.IO', () => {
+  it('adapta los campos y estados reales de NestJS + Prisma', () => {
+    const result = parseSnapshot([
+      { codigo: 'P1', estado: 'LIBRE', activo: true, sensorCodigo: 'IR01', ultimaLectura: new Date().toISOString() },
+      { codigo: 'P2', estado: 'OCUPADO', activo: true },
+      { codigo: 'P3', estado: 'DESCONOCIDO', activo: true },
+    ])
+    expect(result).toHaveLength(7)
+    expect(result[0].occupancy).toBe('FREE')
+    expect(result[1].occupancy).toBe('OCCUPIED')
+    expect(result[2].occupancy).toBe('UNKNOWN')
+  })
+  it('nunca anuncia como libre un espacio deshabilitado', () => {
+    expect(parseSpace({ codigo: 'P1', estado: 'LIBRE', activo: false })?.occupancy).toBe('UNKNOWN')
+  })
+  it('no confía en sensores cuya última lectura está vencida', () => {
+    const outdated = new Date(Date.now() - 120000).toISOString()
+    expect(parseSpace({ codigo: 'P1', estado: 'LIBRE', sensorCodigo: 'IR01', ultimaLectura: outdated })?.occupancy).toBe('UNKNOWN')
+  })
   it('normaliza respuestas y mantiene 7 plazas', () => {
     const result = parseSnapshot({ spaces: [{ code: 'P1', occupancy_status: 'FREE' }] })
     expect(result).toHaveLength(7)
