@@ -16,11 +16,11 @@ export function parseSpace(value: unknown): Space | null {
   const lastReading = Date.parse(String(row.ultimaLectura ?? ''))
   const sensorIsStale = Boolean(row.sensorCodigo) && (!Number.isFinite(lastReading) || Date.now() - lastReading > staleAfterMs)
   // Un estacionamiento deshabilitado nunca debe anunciarse como disponible.
-  const occupancy: Occupancy = row.activo === false || sensorIsStale ? 'UNKNOWN' :
+  const occupancy: Occupancy = row.activo === false ? 'UNKNOWN' :
     ['FREE', 'LIBRE'].includes(raw) ? 'FREE' :
     ['OCCUPIED', 'OCUPADO'].includes(raw) ? 'OCCUPIED' : 'UNKNOWN'
   const time = String(row.updatedAt ?? row.updated_at ?? row.ultimaLectura ?? row.fechaCambio ?? row.timestamp ?? '')
-  return { id: code as SpaceCode, occupancy, updatedAt: Number.isFinite(Date.parse(time)) ? time : '', sequence: typeof row.sequence === 'number' ? row.sequence : undefined }
+  return { id: code as SpaceCode, occupancy, updatedAt: Number.isFinite(Date.parse(time)) ? time : '', isStale: sensorIsStale, sequence: typeof row.sequence === 'number' ? row.sequence : undefined }
 }
 export function parseSnapshot(value: unknown): Space[] {
   const data = obj(value)

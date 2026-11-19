@@ -5,7 +5,8 @@ export const spaceCodes = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'] as const
 export type SpaceCode = typeof spaceCodes[number]
 export type Occupancy = 'FREE' | 'OCCUPIED' | 'UNKNOWN'
 export type SpaceStatus = 'free' | 'occupied' | 'reserved' | 'unknown'
-export type Space = { id: SpaceCode; occupancy: Occupancy; updatedAt: string; sequence?: number }
+// isStale informa sobre la antigüedad de la lectura, sin borrar el último estado guardado.
+export type Space = { id: SpaceCode; occupancy: Occupancy; updatedAt: string; isStale?: boolean; sequence?: number }
 const reservationSchema = z.object({
   id: z.string(), space: z.enum(spaceCodes), date: z.string(), from: z.string(), to: z.string(),
   status: z.enum(['active', 'completed', 'cancelled']),
@@ -56,6 +57,7 @@ export function validateBooking(input: BookingInput, spaces: Space[], reservatio
   if (end <= start) return 'La salida debe ser posterior a la llegada.'
   const space = spaces.find(s => s.id === input.space)
   if (!space || space.occupancy !== 'FREE') return 'Esta plaza ya no está disponible. Elige otra.'
+  if (space.isStale) return 'La última lectura del sensor es antigua. Espera una lectura nueva antes de reservar.'
   if (reservations.some(r => r.space === input.space && r.status === 'active' && start < new Date(`${r.date}T${r.to}`) && end > new Date(`${r.date}T${r.from}`))) return 'Ya existe una reserva para esta plaza en ese horario.'
   return null
 }

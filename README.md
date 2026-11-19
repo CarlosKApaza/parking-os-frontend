@@ -75,7 +75,7 @@ El backend actual responde en `GET /estacionamientos` con los campos de Prisma:
 ]
 ```
 
-El adaptador también acepta el contrato inglés anterior (`code`, `status`, `FREE`, `OCCUPIED`). Siempre conserva siete plazas; las ausentes, deshabilitadas o desconocidas se muestran **Sin confirmar**. Para los sensores registrados con `sensorCodigo`, si `ultimaLectura` supera 90 segundos se invalida su estado: una lectura vieja nunca se presenta como disponibilidad confirmada. El firmware reporta cada 30 segundos cuando está en línea.
+El adaptador también acepta el contrato inglés anterior (`code`, `status`, `FREE`, `OCCUPIED`). Siempre conserva siete plazas; las ausentes, deshabilitadas o desconocidas se muestran **Sin confirmar**. Para sensores con `sensorCodigo`, si `ultimaLectura` supera 90 segundos se conserva el último estado registrado en MySQL y se muestra **Sin señal reciente** como advertencia separada: esa plaza no puede reservarse hasta recibir una lectura nueva. El firmware reporta cada 30 segundos cuando está en línea. El cliente consulta `GET /estacionamientos` cada tres segundos; WebSockets no están implementados aún.
 
 WebSockets y el estado individual de conexión del ESP32 quedan pendientes para la siguiente etapa. No se hicieron cambios al backend ni al firmware para esta integración.
 

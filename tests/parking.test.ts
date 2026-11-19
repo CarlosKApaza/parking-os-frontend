@@ -13,6 +13,7 @@ describe('disponibilidad y reservas', () => {
   it('prioriza el sensor cuando hay ocupación real', () => expect(displayStatus({ ...space, occupancy: 'OCCUPIED' }, [reservation], now)).toBe('occupied'))
   it('nunca muestra una plaza sin confirmar como libre', () => expect(displayStatus({ ...space, occupancy: 'UNKNOWN' }, [], now)).toBe('unknown'))
   it('rechaza reservas superpuestas', () => expect(validateBooking(booking, [space], [reservation], now)).toContain('Ya existe'))
+  it('no permite reservar una plaza libre con lectura antigua', () => expect(validateBooking(booking, [{ ...space, isStale: true }], [], now)).toContain('antigua'))
   it('permite horarios contiguos', () => expect(validateBooking({ ...booking, from: '11:00', to: '12:00' }, [space], [reservation], now)).toBeNull())
   it('rechaza fechas pasadas', () => expect(validateBooking({ ...booking, date: '2026-10-10' }, [space], [], now)).toContain('posterior'))
   it('rechaza fechas inexistentes', () => expect(validateBooking({ ...booking, date: '2026-02-31' }, [space], [], now)).toContain('válidos'))
@@ -40,9 +41,14 @@ describe('contrato de lectura REST y Socket.IO', () => {
   it('nunca anuncia como libre un espacio deshabilitado', () => {
     expect(parseSpace({ codigo: 'P1', estado: 'LIBRE', activo: false })?.occupancy).toBe('UNKNOWN')
   })
-  it('no confía en sensores cuya última lectura está vencida', () => {
+  it('conserva el estado guardado, señalando por separado que la lectura es antigua', () => {
     const outdated = new Date(Date.now() - 120000).toISOString()
-    expect(parseSpace({ codigo: 'P1', estado: 'LIBRE', sensorCodigo: 'IR01', ultimaLectura: outdated })?.occupancy).toBe('UNKNOWN')
+    expect(parseSpace({ codigo: 'P1', estado: 'LIBRE', sensorCodigo: 'IR01', ultimaLectura: outdated })).toMatchObject({ occupancy: 'FREE', isStale: true })
+    expect(parseSpace({ codigo: 'P3', estado: 'OCUPADO', sensorCodigo: 'IR03', ultimaLectura: outdated })).toMatchObject({ occupancy: 'OCCUPIED', isStale: true })
+    expect(parseSpace({ codigo: 'P4', estado: 'DESCONOCIDO', sensorCodigo: 'IR04', ultimaLectura: null })).toMatchObject({ occupancy: 'UNKNOWN', isStale: true })
+  })
+  it('reconoce una lectura reciente sin avisar de antigüedad', () => {
+    expect(parseSpace({ codigo: 'P1', estado: 'LIBRE', sensorCodigo: 'IR01', ultimaLectura: new Date().toISOString() })?.isStale).toBe(false)
   })
   it('normaliza respuestas y mantiene 7 plazas', () => {
     const result = parseSnapshot({ spaces: [{ code: 'P1', occupancy_status: 'FREE' }] })

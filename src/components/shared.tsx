@@ -16,11 +16,13 @@ export function DemoNote({ children }: { children?: ReactNode }) {
   return <p className="demo-note"><CircleHelp size={15} /><span>{children || (isDemo ? 'Modo demo. Los datos y las operaciones son de prueba.' : 'Esta función estará disponible próximamente.')}</span></p>
 }
 export function Availability({ compact = false }: { compact?: boolean }) {
-  const { stats, confirmed, isDemo } = useParkingStore()
+  const { stats, confirmed, isDemo, isLiveOccupancy, spaces } = useParkingStore()
+  const staleCount = isLiveOccupancy ? spaces.filter(s => s.isStale && s.occupancy !== 'UNKNOWN').length : 0
   return <section className={cn('availability-section', compact && 'compact')} aria-label="Disponibilidad de las siete plazas">
-    <div className="section-heading"><h2>Un lugar para ti</h2><span className="live-label"><i className={confirmed ? '' : 'offline'} />{confirmed ? isDemo ? 'Disponibilidad simulada' : 'Conectado' : 'Sin confirmar'}</span></div>
+    <div className="section-heading"><h2>Un lugar para ti</h2><span className="live-label"><i className={confirmed ? '' : 'offline'} />{confirmed ? isLiveOccupancy ? 'Estados registrados en MySQL' : isDemo ? 'Disponibilidad simulada' : 'Conectado' : 'Sin confirmar'}</span></div>
     <div className="stats-grid">{(['free', 'occupied', 'reserved'] as const).map((status, index) => <div className={cn('stat-card', status)} key={status}><div className="stat-label"><span className="stat-dot" />{['Libres', 'Ocupados', 'Reservados'][index]}</div><div className="stat-number">{String(stats[status]).padStart(2, '0')}<span>/ 07</span></div><div className="stat-track"><span style={{ width: `${stats[status] / 7 * 100}%` }} /></div></div>)}</div>
     {stats.unknown > 0 && <p className="unknown-caption">{stats.unknown} de 7 plazas sin confirmar; no se consideran libres.</p>}
+    {staleCount > 0 && <p className="unknown-caption">{staleCount} plaza{staleCount !== 1 ? 's' : ''} con lectura antigua: se muestra el último estado guardado, no una confirmación actual.</p>}
   </section>
 }
 export function ConnectionBanner() {
