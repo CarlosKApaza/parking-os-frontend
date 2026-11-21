@@ -1,123 +1,117 @@
-/* Parking OS · Plano móvil de siete plazas, inspirado en la maqueta y en el diseño aprobado.
-   Mantiene el azul del sistema, sin elementos decorativos que puedan confundirse con sensores. */
-.mobile-spaces-page{width:100%;max-width:900px;margin:0 auto}
-.mobile-spaces-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:19px}
-.mobile-spaces-eyebrow{display:block;color:#a6b7d2;font-size:10px;letter-spacing:.15em;font-weight:750}
-.mobile-spaces-intro h1{font-size:clamp(24px,3vw,35px);font-weight:720;letter-spacing:-.05em;line-height:1.22;margin:7px 0 5px}
-.mobile-spaces-intro h1 span{color:#789aff}
-.mobile-spaces-intro p{font-size:12px;color:#98a1b3}
-.mobile-spaces-floor{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid #424d63;border-radius:30px;color:#b2bed3;font-size:10px;padding:9px 12px}
-.mobile-spaces-panel{background:linear-gradient(165deg,#20242b,#1b1d23);border:1px solid #373f4d;border-radius:22px;padding:19px 20px 13px}
-.mobile-spaces-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.mobile-spaces-count{display:flex;align-items:baseline;gap:9px}
-.mobile-spaces-count strong{font-size:27px;font-weight:750;color:#a6bdff;font-variant-numeric:tabular-nums}
-.mobile-spaces-count span{font-size:12px;color:#d6dce9;font-weight:620}
-.mobile-spaces-toolbar>p{font-size:10px;line-height:1.35;text-align:right;color:#aab2c2}
-.mobile-spaces-map{max-width:560px;margin:0 auto;border:1px solid #3a414d;border-radius:23px;padding:19px 20px 0;background:radial-gradient(circle at 45% 18%,#27324144,transparent 55%),#171a20;overflow:hidden}
-.mobile-spaces-map-label{display:flex;justify-content:space-between;color:#8594ab;font-size:9px;letter-spacing:.15em;font-weight:700;margin-bottom:16px}
-.mobile-spaces-grid{display:grid;grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);grid-template-rows:repeat(4,91px);row-gap:5px;column-gap:6px;position:relative}
-.mobile-spaces-lane{grid-column:2;grid-row:1/5;position:relative;display:flex;flex-direction:column;justify-content:space-around;align-items:center;color:#7c8ca4;pointer-events:none;z-index:1}
-.mobile-spaces-lane svg:first-child{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
-.mobile-spaces-lane svg:first-child path{fill:none;stroke:#657181;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.mobile-spaces-lane>span{background:#1a1e24;writing-mode:vertical-rl;letter-spacing:.22em;font-size:8px;padding:7px 3px;z-index:1}
-.mobile-spaces-lane>svg:not(:first-child){background:#1a1e24;z-index:1}
-.mobile-space-slot{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;min-width:0;min-height:0;cursor:pointer;border:1px solid #3c4554;border-radius:15px;color:#cbd3e0;background:#242932;transition:transform .14s ease,background .14s ease,border-color .14s ease;overflow:hidden}
-.mobile-space-slot:hover{transform:translateY(-1px);border-color:#809cf7}
-.mobile-space-slot:focus-visible{outline:3px solid #7294ff;outline-offset:3px}
-.mobile-space-slot.free{background:#b8cbee;border-color:#d0def7;color:#172944}
-.mobile-space-slot.occupied{background:#252932;border-color:#3c4655}
-.mobile-space-slot.reserved{background:#353026;border-color:#665644;color:#e8cc9e}
-.mobile-space-slot.unknown{background:#27272e;border:1px dashed #515360;color:#b8bac7}
-.mobile-space-slot.stale{border-style:dashed}
-.mobile-space-code{position:absolute;top:8px;left:11px;font-size:13px;font-weight:850;letter-spacing:-.025em}
-.mobile-space-slot.free .mobile-space-code{color:#1a3256}
-.mobile-space-symbol{height:35px;display:flex;align-items:center;justify-content:center;margin-top:4px}
-.mobile-space-slot.free .mobile-space-symbol{width:33px;height:33px;border-radius:11px;background:#5079f0;color:#fff;box-shadow:0 3px 12px #4877e451}
-.mobile-space-slot.occupied .mobile-space-symbol{height:51px}
-.mobile-space-slot.occupied .car-top{width:37px;height:57px;transform:rotate(90deg);filter:drop-shadow(0 3px 5px #000a)}
-.mobile-space-question{font-size:22px;color:#a6a1ab}
-.mobile-space-label{font-size:9px;font-weight:650;opacity:.95}
-.mobile-space-slot.unknown .mobile-space-label{font-size:8px}
-.mobile-space-stale{position:absolute;right:9px;top:9px;width:6px;height:6px;background:#e7b679;border-radius:50%;box-shadow:0 0 0 3px #e7b67918}
-.mobile-spaces-hatch{display:flex;align-items:center;justify-content:center;gap:8px;transform:skew(-15deg)}
-.mobile-spaces-hatch i{width:9px;height:44px;border-radius:2px;background:#404b5a}
-.mobile-spaces-access{display:flex;align-items:center;justify-content:space-between;gap:12px;height:53px;color:#8899b2;font-size:9px;letter-spacing:.13em;font-weight:650}
-.mobile-spaces-access svg{color:#9ab2d3}
-.mobile-spaces-barrier{height:6px;width:56px;border-radius:3px;background:repeating-linear-gradient(110deg,#c9d5e4 0 7px,#334050 7px 14px)}
-.mobile-spaces-legend{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin:15px 0 5px;font-size:10px;color:#bdc4d1}
-.mobile-spaces-legend span{display:flex;align-items:center;gap:6px}
-.mobile-spaces-legend i{width:8px;height:8px;border-radius:3px}
-.mobile-spaces-legend .free{background:#afc6ed}
-.mobile-spaces-legend .occupied{background:#687489}
-.mobile-spaces-legend .reserved{background:#d1b28a}
-.mobile-spaces-legend .unknown{background:#a18c9c}
-.mobile-spaces-hint{display:flex;align-items:start;justify-content:center;gap:6px;color:#d7b17a;font-size:10px;line-height:1.6;text-align:center;margin-top:12px}
-.mobile-spaces-hint svg{flex:none;margin-top:2px}
-.mobile-spaces-note{color:#8f97a7;font-size:10px;line-height:1.55;text-align:center;margin-top:10px}
-.mobile-space-dialog .dialog-description{margin:5px 0 12px}
-.mobile-space-modal-status{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0 12px}
-.mobile-space-modal-status>span:last-child{color:#9da9bd;font-size:10px}
-.mobile-space-modal-facts>div{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #343b48;font-size:11px}
-.mobile-space-modal-facts svg{color:#9cb3df;flex:none}
-.mobile-space-modal-facts span{color:#a4acbb}
-.mobile-space-modal-facts strong{margin-left:auto;text-align:right;font-weight:650;color:#dce4f0}
-.mobile-space-reserve{margin-top:14px}
-.mobile-space-reserve h3{font-size:16px}
-.mobile-space-reserve p{font-size:11px;color:#aab5c9;line-height:1.5;margin:5px 0 9px}
-.mobile-space-reserve label{display:block;font-weight:650;color:#c4ccdc;font-size:11px;margin:10px 0 6px}
-.mobile-space-reserve input{width:100%;min-width:0;background:#171d27;border:1px solid #495365;color:#f0f4fa;padding:10px;border-radius:10px;min-height:42px;font-size:14px;color-scheme:dark}
-.mobile-space-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.mobile-space-reserve .button{width:100%;min-height:46px;margin-top:17px}
-.mobile-space-error{font-size:10px;color:#f1afb6;background:#773e4628;border-radius:9px;padding:9px 11px;margin-top:10px}
-.mobile-space-unavailable{display:flex;align-items:flex-start;gap:11px;background:#35313a;color:#e2c1be;border:1px solid #554651;border-radius:12px;padding:15px;font-size:12px;line-height:1.5;margin-top:16px}
-.mobile-space-unavailable svg{flex:none}
-.mobile-space-modal-footnote{margin-top:12px;font-size:10px;line-height:1.55;color:#9ca6b9}
-.mobile-page-label{display:none}
+/* Parking OS · Plano de plazas minimalista para la feria ExpoSoft.
+   El estado proviene del backend. La selección verde de 30 s es solo una prueba local. */
+.parking-v2{max-width:850px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#eef4f7}
+.parking-v2-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}
+.parking-v2-location{display:flex;align-items:center;gap:9px;color:#c6d2dd;font-size:14px;font-weight:600}
+.parking-v2-location svg{color:#a2bdca;flex:none}
+.parking-v2-separator{color:#5c6673}
+.parking-v2-availability{display:flex;align-items:center;gap:8px;color:#c3d8de;font-size:13px}
+.parking-v2-availability strong{font-weight:800;font-size:23px;color:#b9f2d5}
+.parking-v2-map{background:linear-gradient(180deg,#11171a,#0d1215);border:1px solid #25313a;border-radius:25px;padding:21px 25px 16px;overflow:hidden}
+.parking-v2-grid{display:grid;grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr);grid-template-rows:repeat(4,116px);column-gap:13px;row-gap:13px}
+.parking-v2-lane{grid-column:2;grid-row:1/5;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;color:#70858b;pointer-events:none}
+.parking-v2-lane>svg:first-child{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.parking-v2-lane>svg:first-child path{stroke:#687b80;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.parking-v2-lane>svg:not(:first-child){z-index:1;background:#101619;color:#95aaa9}
+.parking-v2-lane>span{z-index:1;font-size:8px;letter-spacing:.2em;writing-mode:vertical-rl;background:#101619;padding:7px 3px}
+.parking-v2-slot{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;min-width:0;border-radius:16px;background:#252b31;border:1px solid #333d44;color:#eef2f6;cursor:pointer;transition:background-color .18s,border-color .18s,transform .18s,box-shadow .18s}
+.parking-v2-slot:hover{transform:translateY(-2px)}
+.parking-v2-slot:focus-visible{outline:3px solid #9fc1ff;outline-offset:2px}
+.parking-v2-slot.free{background:#deede9;border-color:#d5eee5;color:#152e2b}
+.parking-v2-slot.free:hover{background:#e9fff3}
+.parking-v2-slot.occupied{background:#20252b;border-color:#323d42}
+.parking-v2-slot.unknown{background:#25272c;border:1px solid #3c434b;color:#bec3cb}
+.parking-v2-slot.reserved{background:#29272a;border:1px solid #514b44;color:#d9c5a9}
+.parking-v2-slot.selecting{background:#9cf0c3;border:1px solid #c0ffdc;color:#123a2a;box-shadow:0 1px 12px #72eaaa25}
+.parking-v2-slot.selecting:hover{background:#b1ffd2}
+.parking-v2-code{position:absolute;top:11px;left:13px;font-size:17px;font-weight:800;line-height:1}
+.parking-v2-icon{display:flex;justify-content:center;align-items:center;min-height:36px}
+.parking-v2-slot.free .parking-v2-icon{width:39px;height:39px;min-height:39px;border-radius:13px;background:#5985f7;color:white}
+.parking-v2-slot.unknown .parking-v2-icon{color:#aab1bd}
+.parking-v2-slot.selecting .parking-v2-icon{width:31px;height:31px;min-height:31px;border-radius:50%;background:#eafff2;color:#22724d}
+.parking-v2-slot.occupied .parking-v2-icon{height:63px;min-height:63px}
+.parking-v2-slot.occupied .car-top{width:54px;height:74px;transform:rotate(90deg);filter:drop-shadow(0 2px 5px #000c)}
+.parking-v2-status{font-size:12px;font-weight:630;text-align:center;line-height:1.2}
+.parking-v2-timer{position:absolute;top:11px;right:12px;font-size:10px;font-weight:750;font-variant-numeric:tabular-nums}
+.parking-v2-hatch{display:flex;align-items:center;justify-content:center;gap:9px;transform:skew(-16deg)}
+.parking-v2-hatch i{display:block;width:10px;height:52px;background:#4c6063;border-radius:3px}
+.parking-v2-legend{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:13px 21px;padding-top:18px;color:#aab8c0;font-size:11px}
+.parking-v2-legend span{display:flex;align-items:center;gap:7px}
+.parking-v2-legend i{display:block;width:9px;height:9px;border-radius:3px}
+.parking-v2-legend i.free{background:#deede9}
+.parking-v2-legend i.occupied{background:#6b737a}
+.parking-v2-legend i.selecting{background:#9cf0c3}
+.parking-v2-legend i.unknown{background:#7d828a}
+/* Bottom sheet de selección: botón, arrastre hacia abajo, Escape y toque exterior. */
+.parking-v2-sheet.dialog-content{width:min(460px,calc(100% - 22px));max-width:460px;padding:26px 25px 23px;border-radius:24px;background:#202730;border:1px solid #3c4a55;color:#edf4f7}
+.parking-v2-sheet .dialog-title{font-size:24px;letter-spacing:-.05em;font-weight:750}
+.parking-v2-sheet .dialog-description{margin:5px 0 18px;font-size:12px;line-height:1.4;color:#aebbc7}
+.parking-v2-progress{display:flex;justify-content:space-between;align-items:center;gap:9px;padding:10px 0 13px;font-size:11px}
+.parking-v2-progress span{display:flex;align-items:center;gap:5px}
+.parking-v2-progress span:first-child{color:#9cf0c3;font-weight:700}
+.parking-v2-progress span:last-child{color:#c0cad2;font-variant-numeric:tabular-nums}
+.parking-v2-fields{display:flex;flex-direction:column;gap:4px}
+.parking-v2-fields label{display:block;color:#c5d0d9;font-size:11px;font-weight:650;margin:8px 0 5px}
+.parking-v2-fields input{background:#131b23;color:#f3f7fa;color-scheme:dark;width:100%;border:1px solid #41515e;border-radius:11px;min-width:0;height:44px;padding:10px 11px;font-size:14px}
+.parking-v2-fields input:focus{outline:2px solid #92b4f2;outline-offset:1px}
+.parking-v2-time-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.parking-v2-price{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#abedc9;color:#143b2a;border-radius:19px;margin-top:21px;padding:17px 15px}
+.parking-v2-price-text{display:flex;flex-direction:column;gap:3px}
+.parking-v2-price-text>span{font-size:10px;font-weight:700}
+.parking-v2-price-text>strong{font-size:29px;line-height:1.13;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.parking-v2-price-text>small{font-size:10px;color:#396950}
+.parking-v2-price button{flex:none;border:0;border-radius:30px;background:white;color:#172721;padding:12px 16px;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;min-height:44px;cursor:pointer;box-shadow:0 5px 14px #23623f1e}
+.parking-v2-price button:disabled{opacity:.4;cursor:not-allowed}
+.parking-v2-price button:focus-visible{outline:3px solid #408a63;outline-offset:2px}
+.parking-v2-error{font-size:11px;color:#f1b7b7;line-height:1.4;margin-top:7px}
+.parking-v2-disabled{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:4px 0 7px}
+.parking-v2-disabled-icon{display:flex;align-items:center;justify-content:center;background:#303b43;color:#d4dde2;border-radius:50%;width:64px;height:64px}
+.parking-v2-disabled-icon .car-top{width:25px;height:50px}
+.parking-v2-disabled strong{font-size:15px}
+.parking-v2-disabled button{border:0;border-radius:13px;background:#a9edc8;color:#153b2a;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;padding:12px 23px;margin-top:9px}
 @media(max-width:760px){
-  .mobile-spaces-page{max-width:470px}
-  .mobile-spaces-intro{margin-bottom:12px;align-items:center}
-  .mobile-spaces-intro h1{font-size:25px;margin:5px 0 3px}
-  .mobile-spaces-intro p{font-size:10px}
-  .mobile-spaces-eyebrow{font-size:8px}
-  .mobile-spaces-floor{font-size:9px;padding:7px 9px}
-  .mobile-spaces-panel{padding:13px 12px 10px;border-radius:18px}
-  .mobile-spaces-toolbar{margin-bottom:8px}
-  .mobile-spaces-count strong{font-size:23px}
-  .mobile-spaces-count span{font-size:10px}
-  .mobile-spaces-toolbar>p{font-size:9px}
-  .mobile-spaces-map{padding:12px 12px 0;border-radius:18px}
-  .mobile-spaces-map-label{font-size:8px;margin-bottom:9px}
-  .mobile-spaces-grid{grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);grid-template-rows:repeat(4,69px);row-gap:4px;column-gap:4px}
-  .mobile-space-slot{border-radius:11px}
-  .mobile-space-code{top:6px;left:8px;font-size:11px}
-  .mobile-space-symbol{height:27px;margin-top:3px}
-  .mobile-space-slot.free .mobile-space-symbol{width:29px;height:28px;border-radius:9px}
-  .mobile-space-slot.free .mobile-space-symbol svg{width:19px}
-  .mobile-space-slot.occupied .mobile-space-symbol{height:41px}
-  .mobile-space-slot.occupied .car-top{width:34px;height:48px}
-  .mobile-space-label{font-size:8px}
-  .mobile-space-slot.unknown .mobile-space-label{font-size:7px}
-  .mobile-space-question{font-size:18px}
-  .mobile-spaces-lane>span{font-size:6px}
-  .mobile-spaces-hatch i{height:33px;width:6px}
-  .mobile-spaces-access{height:38px;font-size:7px}
-  .mobile-spaces-barrier{width:46px}
-  .mobile-spaces-legend{font-size:9px;gap:8px 12px;margin:10px 0 3px}
-  .mobile-spaces-note,.mobile-spaces-hint{font-size:9px;margin-top:7px}
-  .main-content:has(.mobile-spaces-page){padding:9px 14px 80px}
-  .main-content:has(.mobile-spaces-page) .page-footer{display:none}
-  .topbar:has(.mobile-page-label){height:55px;padding-inline:17px}
-  .mobile-page-label{display:flex;align-items:center;font-weight:760;font-size:16px;letter-spacing:-.025em}
-  .mobile-space-dialog.dialog-content{top:auto;left:0;right:0;bottom:0;transform:none;width:100%;max-width:none;max-height:min(88dvh,770px);overflow-y:auto;padding:23px 20px calc(22px + env(safe-area-inset-bottom));border-radius:23px 23px 0 0;animation:mobileSheetIn .22s ease-out}
-  .mobile-space-dialog.dialog-content:before{content:'';display:block;width:35px;height:4px;border-radius:4px;background:#586274;margin:-10px auto 15px}
-  .mobile-space-dialog .dialog-title{font-size:21px}
-  .mobile-space-dialog .dialog-description{font-size:11px}
-  @keyframes mobileSheetIn{from{opacity:.7;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  .topbar-spaces{display:none}
+  .main-content:has(.parking-v2){padding:15px 16px calc(78px + env(safe-area-inset-bottom))}
+  .main-content:has(.parking-v2) .page-footer{display:none}
+  .parking-v2-heading{margin-bottom:9px}
+  .parking-v2-location{font-size:12px;gap:5px}
+  .parking-v2-availability{font-size:11px}
+  .parking-v2-availability strong{font-size:20px}
+  .parking-v2-map{padding:13px 12px 13px;border-radius:20px}
+  .parking-v2-grid{grid-template-columns:minmax(0,1fr) 49px minmax(0,1fr);grid-template-rows:repeat(4,clamp(70px,11.7dvh,108px));column-gap:6px;row-gap:7px}
+  .parking-v2-slot{border-radius:13px}
+  .parking-v2-code{font-size:14px;left:9px;top:9px}
+  .parking-v2-icon{min-height:30px}
+  .parking-v2-slot.free .parking-v2-icon{width:32px;height:32px;min-height:32px;border-radius:10px}
+  .parking-v2-slot.free .parking-v2-icon svg{width:21px}
+  .parking-v2-slot.unknown .parking-v2-icon svg,.parking-v2-slot.reserved .parking-v2-icon svg{width:20px}
+  .parking-v2-slot.occupied .parking-v2-icon{height:49px;min-height:49px}
+  .parking-v2-slot.occupied .car-top{width:39px;height:56px}
+  .parking-v2-slot.selecting .parking-v2-icon{width:25px;height:25px;min-height:25px}
+  .parking-v2-status{font-size:10px}
+  .parking-v2-timer{font-size:8px;top:8px;right:8px}
+  .parking-v2-lane>span{font-size:6px}
+  .parking-v2-lane>svg:not(:first-child){width:15px}
+  .parking-v2-hatch{gap:6px}
+  .parking-v2-hatch i{width:6px;height:38px}
+  .parking-v2-legend{font-size:10px;gap:10px 13px;padding-top:14px}
+  .parking-v2-sheet.dialog-content{position:fixed;left:0;right:0;bottom:0;top:auto;transform:translateY(var(--sheet-drag,0px));width:100%;max-width:none;max-height:84dvh;overflow-y:auto;overscroll-behavior:contain;border-radius:25px 25px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom));animation:parkingSheetIn .19s ease-out;touch-action:pan-y}
+  .parking-v2-sheet.dialog-content:before{content:'';display:block;width:37px;height:5px;border-radius:10px;background:#667482;margin:-10px auto 16px}
+  .parking-v2-sheet .dialog-close{top:20px;right:18px}
+  .parking-v2-sheet .dialog-title{font-size:23px}
+  .parking-v2-sheet .dialog-description{margin-bottom:11px}
+  .parking-v2-price{margin-top:14px}
+  @keyframes parkingSheetIn{from{opacity:.9;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 }
-@media(max-width:360px){
-  .mobile-spaces-intro h1{font-size:22px}
-  .mobile-spaces-floor{display:none}
-  .mobile-spaces-grid{grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr);grid-template-rows:repeat(4,65px)}
-  .mobile-spaces-map{padding-inline:8px}
+@media(max-width:355px){
+  .parking-v2-grid{grid-template-columns:minmax(0,1fr) 37px minmax(0,1fr);grid-template-rows:repeat(4,clamp(67px,11dvh,91px));column-gap:4px;row-gap:5px}
+  .parking-v2-map{padding:12px 9px}
+  .parking-v2-status{font-size:9px}
+  .parking-v2-availability strong{font-size:18px}
+  .parking-v2-price button{padding:10px}
+  .parking-v2-price-text>strong{font-size:24px}
 }
-@media(prefers-reduced-motion:reduce){.mobile-space-dialog.dialog-content{animation:none}.mobile-space-slot{transition:none}}
+@media(prefers-reduced-motion:reduce){
+  .parking-v2-slot{transition:none}
+  .parking-v2-sheet.dialog-content{animation:none}
+}
