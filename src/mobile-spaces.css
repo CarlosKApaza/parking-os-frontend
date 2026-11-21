@@ -522,3 +522,120 @@
   .parking-v2-map{min-height:310px}
   .parking-v2-booking-bar{margin-bottom:0}
 }
+
+
+/* Cabecera v5: ubicacion a la izquierda; notificaciones y cuenta a la derecha.
+   El resumen es hermano de topbar-actions, nunca su hijo. */
+@media (max-width:760px) {
+  .workspace:has(.parking-v2) > .topbar.topbar-spaces {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) max-content;
+    grid-template-rows:1fr;
+    align-items:center;
+    column-gap:8px;
+    height:74px;
+    min-height:74px;
+    padding:5px 13px 7px;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-summary {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    gap:4px;
+    min-width:0;
+    grid-column:1;
+    grid-row:1;
+    order:0;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-place {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    flex-wrap:nowrap;
+    gap:4px;
+    min-width:0;
+    white-space:nowrap;
+    font-size:11px;
+    font-weight:650;
+    color:#c8d4d9;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-place>svg{
+    width:14px;
+    height:14px;
+    flex:0 0 auto;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-free {
+    display:flex;
+    align-items:baseline;
+    justify-content:flex-start;
+    gap:5px;
+    margin-left:19px;
+    font-size:10px;
+    color:#b6c7cc;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-free strong {
+    font-size:19px;
+    font-weight:800;
+    color:#aef0cd;
+  }
+  .workspace:has(.parking-v2) .topbar-actions {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    grid-column:2;
+    grid-row:1;
+    justify-self:end;
+    width:max-content;
+    min-width:0;
+    margin:0;
+    padding:0;
+  }
+  .workspace:has(.parking-v2) .header-quick-actions {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+  }
+  .workspace:has(.parking-v2) .notification-button,
+  .workspace:has(.parking-v2) .quick-profile-trigger {
+    display:grid;
+    place-items:center;
+    flex-shrink:0;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:#283a33;
+    border:1px solid #3d5249;
+  }
+  .workspace:has(.parking-v2) .quick-menu-panel {
+    position:absolute;
+    right:0;
+    left:auto;
+    top:calc(100% + 12px);
+    width:min(310px, calc(100vw - 28px));
+    max-width:calc(100vw - 28px);
+    z-index:80;
+  }
+  .workspace:has(.parking-v2) .notifications-panel {
+    right:-46px;
+    left:auto;
+  }
+  .workspace:has(.parking-v2) .main-content:has(.parking-v2) {
+    padding-top:0;
+  }
+}
+@media (max-width:380px) {
+  .workspace:has(.parking-v2) .topbar-spaces-place {
+    font-size:10px;
+    gap:3px;
+  }
+  .workspace:has(.parking-v2) .topbar-actions .header-quick-actions {
+    gap:6px;
+  }
+  .workspace:has(.parking-v2) .notification-button,
+  .workspace:has(.parking-v2) .quick-profile-trigger {
+    width:35px;
+    height:35px;
+  }
+}
