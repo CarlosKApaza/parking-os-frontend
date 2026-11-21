@@ -45,7 +45,19 @@ export function useSpaceHold() {
     }
     const timer = window.setInterval(sync, 350)
     window.addEventListener('storage', sync)
-    return () => { window.clearInterval(timer); window.removeEventListener('storage', sync) }
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('storage', sync)
+      const remainingHolds = readHolds()
+      let changed = false
+      for (const code of spaceCodes) {
+        if (remainingHolds[code]?.owner === owner.current) {
+          delete remainingHolds[code]
+          changed = true
+        }
+      }
+      if (changed) persistHolds(remainingHolds)
+    }
   }, [])
 
   function take(code: SpaceCode): boolean {
