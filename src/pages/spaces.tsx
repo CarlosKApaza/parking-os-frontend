@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
 import { Check, Clock3, LockKeyhole, MapPin, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
-import { CarTop } from '@/components/shared'
+import { CarOverhead } from '@/components/shared'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
 import { money, localDate, tomorrow } from '@/lib/utils'
@@ -62,7 +62,7 @@ export function SpacesPage() {
     const item = spaces.find(value => value.id === code)
     if (!item) return
     const actualStatus = statusOf(item)
-    const available = actualStatus === 'free' && confirmed && isDemo
+    const available = actualStatus === 'free' && confirmed
     const holdTaken = available ? take(code) : false
 
     setSelected(code)
@@ -144,12 +144,12 @@ export function SpacesPage() {
           >
             <span className="parking-v2-code">{id}</span>
             <span className="parking-v2-icon">
-              {itemStatus === 'occupied' ? <CarTop/> :
+              {itemStatus === 'occupied' ? <CarOverhead/> :
                 selecting ? <Check size={23}/> :
-                locked ? <LockKeyhole size={23}/> :
+                locked ? <span className="parking-v2-lock-inline"><LockKeyhole size={24}/><span>{displayed}</span></span> :
                 <Plus size={26}/>}
             </span>
-            {itemStatus !== 'occupied' && <span className="parking-v2-status">{displayed}</span>}
+            {!locked && itemStatus !== 'occupied' && <span className="parking-v2-status">{displayed}</span>}
             {selecting && <span className="parking-v2-timer">{remaining(id)} s</span>}
           </button>
         })}
@@ -184,7 +184,7 @@ export function SpacesPage() {
           <button type="submit" disabled={!!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
         </div>
       </form> : <div className="parking-v2-disabled">
-        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <CarTop/> : <LockKeyhole size={30}/>}</div>
+        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <CarOverhead/> : <LockKeyhole size={30}/>}</div>
         <strong>{selectMessage}</strong>
         <button type="button" onClick={closeSheet}>Entendido <X size={17}/></button>
       </div>)}
