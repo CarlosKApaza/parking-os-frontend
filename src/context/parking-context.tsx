@@ -44,7 +44,7 @@ function useStore() {
   const stats = { free: 0, occupied: 0, reserved: 0, unknown: 0 }
   spaces.forEach(s => stats[statusOf(s)]++)
   function book(input: BookingInput) {
-    const error = validateBooking(input, spaces, current.current.reservations)
+    const error = validateBooking(input, spaces, current.current.reservations, new Date(), isDemo && isLiveOccupancy)
     if (error) throw new Error(error)
     const id = `RS-${crypto.randomUUID().slice(0, 6).toUpperCase()}`
     update(s => ({ ...s, reservations: [{ ...input, id, status: 'active' }, ...s.reservations] }))
