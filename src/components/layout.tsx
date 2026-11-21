@@ -11,7 +11,7 @@ import { Modal } from './ui/dialog'
 
 const navigation = [{ to: '/', label: 'Inicio', Icon: Home }, { to: '/espacios', label: 'Espacios', Icon: ParkingSquare }, { to: '/pago', label: 'Pagar', Icon: ScanLine }, { to: '/seguridad', label: 'Seguridad', Icon: ShieldCheck }, { to: '/perfil', label: 'Perfil', Icon: UserRound }]
 export function Layout() {
-  const { demo, isDemo, isLiveOccupancy, notice, setNotice, reservations } = useParkingStore()
+  const { demo, isDemo, isLiveOccupancy, notice, setNotice, reservations, stats } = useParkingStore()
   const [openMenu, setOpenMenu] = useState<'notifications' | 'profile' | null>(null)
   const quickActionsRef = useRef<HTMLDivElement>(null)
   const [installHelp, setInstallHelp] = useState(false)
@@ -76,6 +76,10 @@ export function Layout() {
           </motion.section>}</AnimatePresence>
         </div>
       </div>
+      {location.pathname === '/espacios' && <div className="topbar-spaces-summary">
+        <span className="topbar-spaces-place"><MapPin size={15}/>Maqueta física <span aria-hidden="true">·</span> Planta única</span>
+        <span className="topbar-spaces-free"><strong>{String(stats.free).padStart(2, '0')}</strong> libres</span>
+      </div>}
     </div></header>
       <main id="main-content" className="main-content" tabIndex={-1}><ConnectionBanner/><motion.div key={location.pathname} initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .22 }}><Outlet/></motion.div><footer className="page-footer"><span><CircleParking size={14}/> Parking OS</span><span>Menos vueltas. Más tiempo para ti.</span><span>{isDemo ? 'Experiencia de demostración' : 'Estacionamiento inteligente'}</span></footer></main>
     </div>
