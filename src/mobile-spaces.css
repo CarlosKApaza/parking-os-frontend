@@ -115,3 +115,202 @@
   .parking-v2-slot{transition:none}
   .parking-v2-sheet.dialog-content{animation:none}
 }
+
+
+/* Refinamiento móvil v3: plano sin contenedor exterior, coches a escala y acciones visibles. */
+.parking-v2-map{
+  background:transparent;
+  border:0;
+  border-radius:0;
+  padding:0;
+  overflow:visible;
+}
+.parking-v2-grid{
+  width:100%;
+  grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);
+  column-gap:7px;
+  row-gap:8px;
+}
+.parking-v2-slot{
+  border-radius:16px;
+  overflow:hidden;
+}
+.parking-v2-slot.occupied .parking-v2-icon{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  min-height:0;
+  margin:0;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+}
+.parking-v2-slot.occupied .car-overhead{
+  display:block;
+  width:calc(100% - 5px);
+  height:calc(100% - 8px);
+  max-width:none;
+  max-height:none;
+  transform:none;
+  filter:drop-shadow(0 6px 8px #0009);
+}
+.parking-v2-slot.occupied .parking-v2-code{z-index:1;text-shadow:0 2px 5px #080b0d}
+.parking-v2-slot.reserved .parking-v2-icon,
+.parking-v2-slot.unknown .parking-v2-icon{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  min-height:44px;
+}
+.parking-v2-lock-inline{display:inline-flex;align-items:center;justify-content:center;gap:9px;white-space:nowrap}
+.parking-v2-lock-inline>span{font-size:12px;font-weight:750}
+.parking-v2-lock-inline svg{flex:none;color:#d4dde3}
+.parking-v2-booking-bar{
+  width:100%;
+  margin-top:11px;
+  flex:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  padding:16px 20px;
+  border-radius:24px;
+  background:#a8ecc5;
+  color:#163a2b;
+}
+.parking-v2-booking-price{display:flex;flex-direction:column;gap:3px;min-width:0}
+.parking-v2-booking-price>span{font-size:10px;font-weight:750;letter-spacing:.07em}
+.parking-v2-booking-price strong{font-size:27px;line-height:1.1;font-weight:850;letter-spacing:-.055em;white-space:nowrap}
+.parking-v2-booking-bar button{
+  min-height:45px;
+  border:0;
+  border-radius:50px;
+  background:#fafffd;
+  color:#142923;
+  font-size:13px;
+  font-weight:800;
+  padding:12px 18px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.parking-v2-booking-bar button:hover:not(:disabled){background:#e7fff2}
+.parking-v2-booking-bar button:focus-visible{outline:3px solid #377a57;outline-offset:2px}
+.parking-v2-booking-bar button:disabled{opacity:.6;cursor:not-allowed}
+.parking-v2-disabled-icon:has(.car-overhead){
+  background:none;
+  border-radius:0;
+  width:min(100%,310px);
+  height:114px;
+}
+.parking-v2-disabled-icon .car-overhead{width:95%;height:100%}
+@media(max-width:760px){
+  /* Antes se ocultaba el topbar completo, por eso faltaban cuenta y notificaciones. */
+  .topbar.topbar-spaces{
+    display:flex;
+    height:54px;
+    min-height:54px;
+    padding:5px 17px;
+    justify-content:flex-end;
+    align-items:center;
+    border:0;
+    background:transparent;
+  }
+  .topbar.topbar-spaces .breadcrumbs,
+  .topbar.topbar-spaces .mobile-page-label,
+  .topbar.topbar-spaces .location-label,
+  .topbar.topbar-spaces .mode-pill{display:none!important}
+  .topbar.topbar-spaces .topbar-actions{margin-left:auto;justify-content:flex-end;gap:0}
+  .topbar.topbar-spaces .header-quick-actions{gap:11px}
+  .topbar.topbar-spaces .notification-button,
+  .topbar.topbar-spaces .quick-profile-trigger{
+    width:42px;
+    height:42px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    color:#ecf5f2;
+    background:#27352f;
+    border:1px solid #36473e;
+  }
+  .topbar.topbar-spaces .notification-button:hover,
+  .topbar.topbar-spaces .quick-profile-trigger:hover{background:#385648}
+  .topbar.topbar-spaces .quick-profile-trigger{font-size:14px;font-weight:800}
+  .main-content:has(.parking-v2){
+    max-width:none;
+    padding:3px 13px calc(78px + env(safe-area-inset-bottom));
+  }
+  .parking-v2{
+    display:flex;
+    flex-direction:column;
+    min-height:calc(100dvh - 150px - env(safe-area-inset-bottom));
+    max-width:540px;
+    margin:0 auto;
+  }
+  .parking-v2-heading{
+    flex:none;
+    min-height:34px;
+    margin:0 0 9px;
+    padding:0 4px;
+  }
+  .parking-v2-location{font-size:12px}
+  .parking-v2-map{
+    flex:1 1 auto;
+    min-height:365px;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    border:0;
+    border-radius:0;
+    padding:0;
+    background:transparent;
+  }
+  .parking-v2-grid{
+    flex:1 1 auto;
+    grid-template-columns:minmax(0,1fr) min(12vw,57px) minmax(0,1fr);
+    grid-template-rows:repeat(4,minmax(0,1fr));
+    column-gap:7px;
+    row-gap:7px;
+  }
+  .parking-v2-slot{border-radius:15px}
+  .parking-v2-slot.occupied .parking-v2-icon{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    min-height:0;
+    margin:0;
+  }
+  .parking-v2-slot.occupied .car-overhead{
+    width:calc(100% - 4px);
+    height:calc(100% - 8px);
+    max-width:none;
+    max-height:none;
+    transform:none;
+    filter:drop-shadow(0 4px 8px #0009);
+  }
+  .parking-v2-slot.unknown .parking-v2-icon,
+  .parking-v2-slot.reserved .parking-v2-icon{min-height:35px}
+  .parking-v2-lock-inline{gap:7px}
+  .parking-v2-lock-inline svg{width:22px;height:22px}
+  .parking-v2-lock-inline>span{font-size:11px}
+  .parking-v2-booking-bar{
+    margin:10px -13px calc(-4px - env(safe-area-inset-bottom));
+    width:calc(100% + 26px);
+    border-radius:25px 25px 0 0;
+    padding:17px 20px;
+    gap:8px;
+  }
+  .parking-v2-booking-price strong{font-size:28px}
+  .parking-v2-booking-bar button{min-height:47px;font-size:12px;padding:12px 18px}
+}
+@media(max-width:375px){
+  .parking-v2-grid{grid-template-columns:minmax(0,1fr) 37px minmax(0,1fr);gap:5px}
+  .parking-v2-lock-inline{gap:4px}
+  .parking-v2-lock-inline svg{width:19px;height:19px}
+  .parking-v2-lock-inline>span{font-size:10px}
+  .parking-v2-booking-price strong{font-size:24px}
+  .parking-v2-booking-price>span{font-size:8px}
+  .parking-v2-booking-bar button{padding:10px 13px;font-size:11px}
+}
