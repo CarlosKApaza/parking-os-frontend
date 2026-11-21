@@ -11,7 +11,7 @@ import { useSpaceHold } from '@/hooks/use-space-hold'
 const order: (SpaceCode | null)[] = ['P1', 'P5', 'P2', 'P6', 'P3', 'P7', 'P4', null]
 
 export function SpacesPage() {
-  const { spaces, statusOf, stats, confirmed, isDemo, isLiveOccupancy, reservations, book } = useParkingStore()
+  const { spaces, statusOf, stats, confirmed, isDemo, isLiveOccupancy, reservations, book, setNotice } = useParkingStore()
   const { take, release, remaining, ownerOf } = useSpaceHold()
   const [selected, setSelected] = useState<SpaceCode | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -26,11 +26,11 @@ export function SpacesPage() {
   const status = space ? statusOf(space) : 'unknown'
   const myHold = selected ? ownerOf(selected) === 'me' : false
   const remainingSeconds = remaining(selected)
-  const canReserve = !!(space && status === 'free' && confirmed && isDemo && myHold && remainingSeconds > 0)
+  const canReserve = !!(space && status === 'free' && confirmed && myHold && remainingSeconds > 0)
   const input = selected ? { space: selected, date, from, to } : null
   const quote = quoteParking(date, from, to)
   const validation = canReserve && input
-    ? validateBooking(input, spaces, reservations, new Date(), isDemo && isLiveOccupancy)
+    ? validateBooking(input, spaces, reservations, new Date(), isLiveOccupancy)
     : null
 
   useEffect(() => {
@@ -81,7 +81,11 @@ export function SpacesPage() {
       return
     }
     try {
-      book(input)
+      if (isLiveOccupancy && !isDemo) {
+        setNotice('Reserva simulada para ' + input.space + '. Todavía no se registra en el backend.')
+      } else {
+        book(input)
+      }
       closeSheet()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo registrar la reserva de prueba.')
@@ -107,6 +111,8 @@ export function SpacesPage() {
     touch.current = null
     if (distance > 85) closeSheet()
   }
+
+  const firstFree = confirmed ? spaces.find(entry => statusOf(entry) === 'free' && !ownerOf(entry.id)) : undefined
 
   const selectMessage = status === 'occupied' ? 'Plaza ocupada' :
     status === 'reserved' ? 'Plaza reservada' :
@@ -155,8 +161,17 @@ export function SpacesPage() {
         })}
       </div>
     </div>
+    <div className="parking-v2-booking-bar">
+      <div className="parking-v2-booking-price">
+        <span>TARIFA DEMO / HORA</span>
+        <strong>Bs {money(DEMO_RATE_BS)}</strong>
+      </div>
+      <button type="button" onClick={() => { if (firstFree) chooseSpace(firstFree.id) }} disabled={!firstFree}>
+        {firstFree ? 'Reservar plaza' : 'Sin plazas libres'}
+      </button>
+    </div>
     <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}
-      title={selected ? 'Plaza ' + selected : 'Plaza'} description={selectMessage || 'Elige el horario de tu reserva.'}
+      title={selected ? 'Plaza ' + selected : 'Plaza'} description={selectMessage || 'Selecciona tu horario. Reserva de demostración.'}
       contentClassName="parking-v2-sheet"
       onContentTouchStart={onTouchStart} onContentTouchMove={onTouchMove} onContentTouchEnd={onTouchEnd}
     >
