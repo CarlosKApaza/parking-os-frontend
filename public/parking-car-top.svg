@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="164" viewBox="0 0 360 164" role="img" aria-label="Auto blanco visto desde arriba, orientado hacia la derecha">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f9fcfd"/>
+      <stop offset=".17" stop-color="#b2c3cc"/>
+      <stop offset=".29" stop-color="#f9ffff"/>
+      <stop offset=".52" stop-color="#eef6f9"/>
+      <stop offset=".76" stop-color="#f8fcfe"/>
+      <stop offset=".88" stop-color="#aab9c2"/>
+      <stop offset="1" stop-color="#f6fafb"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f5fbff"/><stop offset=".15" stop-color="#a7b9c6"/><stop offset=".32" stop-color="#f8fcff"/><stop offset=".68" stop-color="#e1edf2"/><stop offset=".88" stop-color="#9caeba"/><stop offset="1" stop-color="#f7fbfd"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2=".7" y2="1">
+      <stop offset="0" stop-color="#394650"/><stop offset=".36" stop-color="#0e171d"/><stop offset=".75" stop-color="#26323b"/><stop offset="1" stop-color="#090e12"/>
+    </linearGradient>
+    <linearGradient id="rear" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#151d23"/><stop offset=".55" stop-color="#3a4851"/><stop offset="1" stop-color="#121a20"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-35%" width="140%" height="170%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+  <!-- 4 ruedas, sombra y espejos -->
+  <path d="M33 46 Q40 13 89 13 H269 Q325 13 340 45 L343 114 Q333 151 271 151 H88 Q39 151 27 116 L19 90 L23 61Z" fill="#010509" opacity=".58" filter="url(#shadow)" transform="translate(0 4)"/>
+  <rect x="65" y="4" width="65" height="26" rx="7" fill="#0b1115"/><rect x="65" y="135" width="65" height="25" rx="7" fill="#0b1115"/>
+  <rect x="238" y="4" width="65" height="26" rx="7" fill="#0b1115"/><rect x="238" y="135" width="65" height="25" rx="7" fill="#0b1115"/>
+  <rect x="72" y="8" width="51" height="10" rx="3" fill="#29313a"/><rect x="72" y="146" width="51" height="10" rx="3" fill="#29313a"/>
+  <rect x="246" y="8" width="51" height="10" rx="3" fill="#29313a"/><rect x="246" y="146" width="51" height="10" rx="3" fill="#29313a"/>
+  <!-- contorno vehículo -->
+  <path d="M31 45 Q41 24 74 23 L271 22 Q313 23 328 43 L336 63 Q341 82 336 101 L328 120 Q312 143 272 143 L74 142 Q39 141 31 120 Q19 84 31 45Z" fill="url(#body)" stroke="#596b77" stroke-width="2.8"/>
+  <path d="M36 46 Q47 31 81 29 H261 Q305 29 321 49" fill="none" stroke="#fff" stroke-width="5" opacity=".85"/>
+  <path d="M36 120 Q52 135 81 136 H261 Q306 135 321 117" fill="none" stroke="#fff" stroke-width="4" opacity=".76"/>
+  <!-- luces traseras -->
+  <path d="M30 46 L45 43 L51 62 L29 65 Z" fill="#e95461" stroke="#d59ba2" stroke-width="1.5"/>
+  <path d="M29 99 L51 104 L45 121 L30 118 Z" fill="#e95461" stroke="#d59ba2" stroke-width="1.5"/>
+  <path d="M34 48L42 48L45 58L31 60Z M31 103L45 107L42 116L34 115Z" fill="#ffb6be" opacity=".8"/>
+  <!-- luces delanteras -->
+  <path d="M314 40 Q326 47 330 61 L312 57 L299 41Z" fill="#e9f8fb" stroke="#8ba3b1" stroke-width="1.8"/>
+  <path d="M312 106 L330 103 Q326 117 315 123 L299 122Z" fill="#e9f8fb" stroke="#8ba3b1" stroke-width="1.8"/>
+  <path d="M315 44L324 54L307 51Z M308 113L324 110L315 120Z" fill="#b0e7fa" opacity=".7"/>
+  <!-- luneta trasera -->
+  <path d="M76 34 Q91 31 101 34 Q109 81 101 128 Q89 133 77 128 Q56 113 56 81 Q56 49 76 34 Z" fill="url(#rear)" stroke="#6d8390" stroke-width="2.2"/>
+  <path d="M79 39 Q92 36 95 37 Q103 81 95 124 Q83 127 79 123" fill="none" stroke="#c7dbe4" stroke-width="2" opacity=".66"/>
+  <!-- pilares y techo -->
+  <path d="M110 32 Q129 26 158 27 H234 Q258 27 271 45 L273 116 Q259 139 234 138 H158 Q129 138 110 132Z" fill="url(#roof)" stroke="#8da1ac" stroke-width="2.2"/>
+  <!-- ventanillas laterales negras -->
+  <path d="M117 36L157 34L159 50L151 73L114 70Z" fill="url(#glass)" stroke="#566774" stroke-width="1.2"/>
+  <path d="M117 129L157 131L159 114L151 91L114 94Z" fill="url(#glass)" stroke="#566774" stroke-width="1.2"/>
+  <path d="M213 32 L244 34 Q263 42 266 60 L252 66 L222 50 Z" fill="#27333b" stroke="#778b96" stroke-width="1.1"/>
+  <path d="M213 132 L244 129 Q263 120 266 105 L252 99 L222 114 Z" fill="#27333b" stroke="#778b96" stroke-width="1.1"/>
+  <!-- parabrisas oscuro hacia el frente (derecha) -->
+  <path d="M236 34 Q261 38 274 54 L284 79 L274 111 Q263 126 236 131 Q219 112 218 82 Q219 51 236 34Z" fill="url(#glass)" stroke="#7e939e" stroke-width="2.8"/>
+  <path d="M240 39Q260 44 270 57L279 80L270 107Q260 120 241 125" fill="none" stroke="#536875" stroke-width="2.8" opacity=".75"/>
+  <!-- techo central liso, sin marcas -->
+  <path d="M166 29 L220 30 Q210 54 210 82 Q210 112 221 135 L166 136 Q172 110 172 82 Q172 54 166 29Z" fill="#f9feff" stroke="#c4d1da" stroke-width="1.7"/>
+  <path d="M169 33Q176 83 169 130" fill="none" stroke="#e1eef2" stroke-width="3"/>
+  <path d="M215 34Q206 82 215 131" fill="none" stroke="#c3d1d9" stroke-width="2"/>
+  <!-- maletero y capó -->
+  <path d="M47 37 Q38 82 47 126" fill="none" stroke="#9aacb6" stroke-width="2.3" opacity=".7"/>
+  <path d="M289 37 Q299 80 289 127" fill="none" stroke="#aab9c4" stroke-width="2.4" opacity=".7"/>
+  <path d="M303 58 Q309 63 310 81 Q309 99 303 104" fill="none" stroke="#fff" stroke-width="3" opacity=".85"/>
+  <!-- espejos -->
+  <path d="M245 23 L254 11 Q263 8 271 14 L274 24 Z" fill="#dbe7ed" stroke="#607581" stroke-width="2"/>
+  <path d="M245 142 L254 154 Q263 157 271 151 L274 141 Z" fill="#dbe7ed" stroke="#607581" stroke-width="2"/>
+  <!-- juntas, manillas y brillo -->
+  <path d="M115 26L119 21 M115 140L119 145 M190 25L193 20 M190 140L193 145" stroke="#6d8392" stroke-width="2" stroke-linecap="round"/>
+  <path d="M131 34L148 34 M131 132L148 132 M188 35L200 35 M188 132L200 132" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M77 27H240" stroke="#fff" stroke-width="2.1" opacity=".58"/>
+</svg>
