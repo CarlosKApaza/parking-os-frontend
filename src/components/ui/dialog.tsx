@@ -1,12 +1,12 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { ReactNode, TouchEventHandler } from 'react'
 
-export function Modal({ open, onOpenChange, title, description, children, contentClassName }: { open: boolean; onOpenChange: (value: boolean) => void; title: string; description?: string; children: ReactNode; contentClassName?: string }) {
+export function Modal({ open, onOpenChange, title, description, children, contentClassName, onContentTouchStart, onContentTouchMove, onContentTouchEnd }: { open: boolean; onOpenChange: (value: boolean) => void; title: string; description?: string; children: ReactNode; contentClassName?: string; onContentTouchStart?: TouchEventHandler<HTMLDivElement>; onContentTouchMove?: TouchEventHandler<HTMLDivElement>; onContentTouchEnd?: TouchEventHandler<HTMLDivElement> }) {
   return <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="dialog-overlay" />
-      <DialogPrimitive.Content className={"dialog-content" + (contentClassName ? " " + contentClassName : "")}>
+      <DialogPrimitive.Content className={"dialog-content" + (contentClassName ? " " + contentClassName : "")} onTouchStart={onContentTouchStart} onTouchMove={onContentTouchMove} onTouchEnd={onContentTouchEnd} onTouchCancel={onContentTouchEnd}>
         <DialogPrimitive.Title className="dialog-title">{title}</DialogPrimitive.Title>
         <DialogPrimitive.Description className={description ? 'dialog-description' : 'sr-only'}>{description || title}</DialogPrimitive.Description>
         {children}
