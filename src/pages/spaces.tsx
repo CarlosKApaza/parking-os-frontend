@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
-import { ArrowDown, Check, Clock3, LockKeyhole, MapPin, Plus, X } from 'lucide-react'
+import { Check, Clock3, LockKeyhole, MapPin, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { CarTop } from '@/components/shared'
 import { Modal } from '@/components/ui/dialog'
@@ -124,7 +124,6 @@ export function SpacesPage() {
       <div className="parking-v2-grid">
         <div className="parking-v2-lane" aria-hidden="true">
           <svg viewBox="0 0 78 448" preserveAspectRatio="none"><path d="M12 4H30Q62 4 62 32V88Q62 113 32 113H31Q12 113 12 142V200Q12 226 36 226H39Q64 226 64 254V314Q64 338 33 338H29Q13 338 13 366V444"/></svg>
-          <ArrowDown size={17}/><span>CIRCULACIÓN</span><ArrowDown size={17}/>
         </div>
         {order.map((id, index) => {
           if (!id) return <div key="zona" className="parking-v2-hatch" style={{gridColumn: 3, gridRow: 4}} aria-hidden="true"><i/><i/><i/><i/></div>
@@ -150,19 +149,12 @@ export function SpacesPage() {
                 locked ? <LockKeyhole size={23}/> :
                 <Plus size={26}/>}
             </span>
-            <span className="parking-v2-status">{displayed}</span>
+            {itemStatus !== 'occupied' && <span className="parking-v2-status">{displayed}</span>}
             {selecting && <span className="parking-v2-timer">{remaining(id)} s</span>}
           </button>
         })}
       </div>
     </div>
-    <div className="parking-v2-legend" aria-label="Estados de las plazas">
-      <span><i className="free"/>Libre</span>
-      <span><i className="occupied"/>Ocupado</span>
-      <span><i className="selecting"/>Seleccionado</span>
-      <span><i className="unknown"/>Bloqueado</span>
-    </div>
-
     <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}
       title={selected ? 'Plaza ' + selected : 'Plaza'} description={selectMessage || 'Elige el horario de tu reserva.'}
       contentClassName="parking-v2-sheet"
