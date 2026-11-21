@@ -1,37 +1,73 @@
-import { useState, type FormEvent } from 'react'
-import { ArrowDown, ArrowRight, Check, Clock3, LockKeyhole, MapPin, Plus, Radio, WifiOff } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
+import { ArrowDown, Check, Clock3, LockKeyhole, MapPin, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
-import { CarTop, StatusBadge } from '@/components/shared'
-import { Button } from '@/components/ui/button'
+import { CarTop } from '@/components/shared'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
-import { localDate, tomorrow } from '@/lib/utils'
+import { money, localDate, tomorrow } from '@/lib/utils'
+import { DEMO_RATE_BS, quoteParking } from '@/lib/pricing'
+import { useSpaceHold } from '@/hooks/use-space-hold'
 
 const order: (SpaceCode | null)[] = ['P1', 'P5', 'P2', 'P6', 'P3', 'P7', 'P4', null]
 
 export function SpacesPage() {
-  const { spaces, stats, statusOf, confirmed, isDemo, isLiveOccupancy, reservations, book } = useParkingStore()
+  const { spaces, statusOf, stats, confirmed, isDemo, isLiveOccupancy, reservations, book } = useParkingStore()
+  const { take, release, remaining, ownerOf } = useSpaceHold()
   const [selected, setSelected] = useState<SpaceCode | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [heldSelection, setHeldSelection] = useState(false)
   const [date, setDate] = useState(tomorrow)
   const [from, setFrom] = useState('09:00')
   const [to, setTo] = useState('11:00')
   const [error, setError] = useState('')
+  const touch = useRef<{ start: number; delta: number } | null>(null)
 
-  const current = selected ? spaces.find(space => space.id === selected) : undefined
-  const status = current ? statusOf(current) : 'unknown'
-  const outdated = !!(isLiveOccupancy && current?.isStale && current.occupancy !== 'UNKNOWN')
-  const canBook = !!(current && isDemo && status === 'free' && !outdated && confirmed)
+  const space = selected ? spaces.find(item => item.id === selected) : undefined
+  const status = space ? statusOf(space) : 'unknown'
+  const myHold = selected ? ownerOf(selected) === 'me' : false
+  const remainingSeconds = remaining(selected)
+  const canReserve = !!(space && status === 'free' && confirmed && isDemo && myHold && remainingSeconds > 0)
   const input = selected ? { space: selected, date, from, to } : null
-  const validation = canBook && input ? validateBooking(input, spaces, reservations) : null
-  const staleCount = isLiveOccupancy
-    ? spaces.filter(space => space.isStale && space.occupancy !== 'UNKNOWN').length
-    : 0
-  const lastReading = current?.updatedAt
-    ? new Date(current.updatedAt).toLocaleString('es-BO', { dateStyle: 'medium', timeStyle: 'short' })
-    : 'No registrada'
+  const quote = quoteParking(date, from, to)
+  const validation = canReserve && input
+    ? validateBooking(input, spaces, reservations, new Date(), isDemo && isLiveOccupancy)
+    : null
+
+  useEffect(() => {
+    if (selected && heldSelection && remainingSeconds === 0) {
+      setSelected(null)
+      setHeldSelection(false)
+      setModalOpen(false)
+    }
+  }, [selected, heldSelection, remainingSeconds])
+
+  useEffect(() => {
+    if (selected && heldSelection && status !== 'free') {
+      release(selected)
+      setSelected(null)
+      setHeldSelection(false)
+      setModalOpen(false)
+    }
+  }, [selected, heldSelection, status]) // El estado físico tiene prioridad sobre una selección provisional.
+
+  function closeSheet() {
+    if (selected && heldSelection) release(selected)
+    setSelected(null)
+    setHeldSelection(false)
+    setModalOpen(false)
+    setError('')
+  }
 
   function chooseSpace(code: SpaceCode) {
+    const item = spaces.find(value => value.id === code)
+    if (!item) return
+    const actualStatus = statusOf(item)
+    const available = actualStatus === 'free' && confirmed && isDemo
+    const holdTaken = available ? take(code) : false
+
     setSelected(code)
+    setHeldSelection(holdTaken)
+    setModalOpen(true)
     setError('')
     setDate(tomorrow())
     setFrom('09:00')
@@ -40,122 +76,126 @@ export function SpacesPage() {
 
   function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!canBook || !input || validation) {
-      setError(validation ?? 'Esta plaza no está disponible para reservar.')
+    if (!canReserve || !input || validation || quote.hours < 1) {
+      setError(validation || 'Selecciona una plaza y un horario válidos.')
       return
     }
     try {
       book(input)
-      setSelected(null)
-      setError('')
+      closeSheet()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No pudimos guardar la reserva.')
+      setError(cause instanceof Error ? cause.message : 'No se pudo registrar la reserva de prueba.')
     }
   }
 
-  return <div className="mobile-spaces-page">
-    <div className="mobile-spaces-intro">
-      <div>
-        <span className="mobile-spaces-eyebrow">ESTACIONAMIENTO PRINCIPAL</span>
-        <h1>Elige tu espacio<span>.</span></h1>
-        <p>Consulta las siete plazas en un solo plano.</p>
-      </div>
-      <span className="mobile-spaces-floor"><MapPin size={14} />Planta única</span>
+  function onTouchStart(event: TouchEvent<HTMLDivElement>) {
+    if (!window.matchMedia('(max-width: 760px)').matches) return
+    const target = event.target as HTMLElement
+    if (target.closest('input, select, textarea, button')) return
+    if (event.currentTarget.scrollTop > 0) return
+    touch.current = { start: event.touches[0].clientY, delta: 0 }
+  }
+  function onTouchMove(event: TouchEvent<HTMLDivElement>) {
+    if (!touch.current) return
+    const distance = Math.max(0, event.touches[0].clientY - touch.current.start)
+    touch.current.delta = distance
+    event.currentTarget.style.setProperty('--sheet-drag', Math.min(distance, 300) + 'px')
+  }
+  function onTouchEnd(event: TouchEvent<HTMLDivElement>) {
+    const distance = touch.current?.delta || 0
+    event.currentTarget.style.removeProperty('--sheet-drag')
+    touch.current = null
+    if (distance > 85) closeSheet()
+  }
+
+  const selectMessage = status === 'occupied' ? 'Plaza ocupada' :
+    status === 'reserved' ? 'Plaza reservada' :
+    status === 'unknown' || !confirmed ? 'Plaza bloqueada' :
+    !isDemo ? 'Reservas aún no disponibles' :
+    !myHold ? 'Otro usuario está seleccionando esta plaza' : ''
+
+  return <section className="parking-v2" aria-label="Estacionamientos de la maqueta">
+    <div className="parking-v2-heading">
+      <div className="parking-v2-location"><MapPin size={17}/><span>Maqueta física</span><span className="parking-v2-separator">·</span><span>Planta única</span></div>
+      <div className="parking-v2-availability"><strong>{String(stats.free).padStart(2, '0')}</strong><span>libres</span></div>
     </div>
 
-    <section className="mobile-spaces-panel" aria-label="Plano del estacionamiento">
-      <header className="mobile-spaces-toolbar">
-        <div className="mobile-spaces-count"><strong>{String(stats.free).padStart(2, '0')}</strong><span>libres de 07</span></div>
-        <p>{!confirmed ? 'Conexión sin confirmar' : staleCount ? String(staleCount) + ' lecturas antiguas' : 'Estados consultados'}</p>
-      </header>
-
-      <div className="mobile-spaces-map">
-        <div className="mobile-spaces-map-label"><span>PLANTA 01</span><span>TOCA UNA PLAZA</span></div>
-        <div className="mobile-spaces-grid">
-          <div className="mobile-spaces-lane" aria-hidden="true">
-            <svg viewBox="0 0 72 440" preserveAspectRatio="none">
-              <path d="M15 8 H33 Q58 8 58 38 V94 Q58 115 37 115 H34 Q13 115 13 139 V204 Q13 227 36 227 H39 Q59 227 59 249 V315 Q59 338 36 338 H33 Q14 338 14 363 V429" />
-            </svg>
-            <ArrowDown size={19}/>
-            <span>CIRCULACIÓN</span>
-            <ArrowDown size={19}/>
-          </div>
-          {order.map((id, index) => {
-            if (!id) {
-              return <div key="zona" className="mobile-spaces-hatch" style={{ gridColumn: 3, gridRow: 4 }} aria-hidden="true"><i/><i/><i/><i/></div>
-            }
-            const item = spaces.find(space => space.id === id)!
-            const itemStatus = statusOf(item)
-            const stale = isLiveOccupancy && item.isStale && item.occupancy !== 'UNKNOWN'
-            return <button
-              key={id}
-              type="button"
-              className={'mobile-space-slot ' + itemStatus + (selected === id ? ' selected' : '') + (stale ? ' stale' : '')}
-              style={{ gridColumn: index % 2 === 0 ? 1 : 3, gridRow: Math.floor(index / 2) + 1 }}
-              onClick={() => chooseSpace(id)}
-              aria-label={'Plaza ' + id + ': ' + statusLabels[itemStatus] + (stale ? ', lectura antigua' : '') + '. Ver detalles'}
-            >
-              <span className="mobile-space-code">{id}</span>
-              <span className="mobile-space-symbol">
-                {itemStatus === 'occupied' ? <CarTop /> :
-                  itemStatus === 'free' ? <Plus size={23} strokeWidth={2} /> :
-                  itemStatus === 'reserved' ? <LockKeyhole size={21} /> :
-                  <span className="mobile-space-question">?</span>}
-              </span>
-              <span className="mobile-space-label">{stale ? 'Sin señal reciente' : statusLabels[itemStatus]}</span>
-              {stale && <span className="mobile-space-stale" aria-label="Lectura antigua" />}
-            </button>
-          })}
+    <div className="parking-v2-map">
+      <div className="parking-v2-grid">
+        <div className="parking-v2-lane" aria-hidden="true">
+          <svg viewBox="0 0 78 448" preserveAspectRatio="none"><path d="M12 4H30Q62 4 62 32V88Q62 113 32 113H31Q12 113 12 142V200Q12 226 36 226H39Q64 226 64 254V314Q64 338 33 338H29Q13 338 13 366V444"/></svg>
+          <ArrowDown size={17}/><span>CIRCULACIÓN</span><ArrowDown size={17}/>
         </div>
-        <div className="mobile-spaces-access"><span>ENTRADA</span><ArrowRight size={18}/><span className="mobile-spaces-barrier"/><span>SALIDA</span></div>
+        {order.map((id, index) => {
+          if (!id) return <div key="zona" className="parking-v2-hatch" style={{gridColumn: 3, gridRow: 4}} aria-hidden="true"><i/><i/><i/><i/></div>
+          const item = spaces.find(entry => entry.id === id)!
+          const itemStatus = statusOf(item)
+          const holder = ownerOf(id)
+          const selecting = itemStatus === 'free' && holder !== null
+          const locked = itemStatus === 'unknown' || itemStatus === 'reserved'
+          const displayed = selecting ? holder === 'me' ? 'Seleccionado' : 'Seleccionando' :
+            locked ? itemStatus === 'reserved' ? 'Reservado' : 'Bloqueado' : statusLabels[itemStatus]
+          return <button
+            type="button"
+            key={id}
+            className={'parking-v2-slot ' + (selecting ? 'selecting' : itemStatus) + (selected === id ? ' active' : '')}
+            style={{gridColumn: index % 2 ? 3 : 1, gridRow: Math.floor(index / 2) + 1}}
+            onClick={() => chooseSpace(id)}
+            aria-label={'Plaza ' + id + ', ' + displayed + (itemStatus === 'unknown' ? ', sin lectura confirmada' : '')}
+          >
+            <span className="parking-v2-code">{id}</span>
+            <span className="parking-v2-icon">
+              {itemStatus === 'occupied' ? <CarTop/> :
+                selecting ? <Check size={23}/> :
+                locked ? <LockKeyhole size={23}/> :
+                <Plus size={26}/>}
+            </span>
+            <span className="parking-v2-status">{displayed}</span>
+            {selecting && <span className="parking-v2-timer">{remaining(id)} s</span>}
+          </button>
+        })}
       </div>
+    </div>
+    <div className="parking-v2-legend" aria-label="Estados de las plazas">
+      <span><i className="free"/>Libre</span>
+      <span><i className="occupied"/>Ocupado</span>
+      <span><i className="selecting"/>Seleccionado</span>
+      <span><i className="unknown"/>Bloqueado</span>
+    </div>
 
-      <div className="mobile-spaces-legend" aria-label="Leyenda de estados">
-        <span><i className="free"/>Libre</span>
-        <span><i className="occupied"/>Ocupado</span>
-        <span><i className="reserved"/>Reservado</span>
-        <span><i className="unknown"/>Sin confirmar</span>
-      </div>
-      {staleCount > 0 && <p className="mobile-spaces-hint"><Clock3 size={13}/>{staleCount} plaza{staleCount === 1 ? '' : 's'} sin lectura reciente; se muestra el último estado guardado.</p>}
-      <p className="mobile-spaces-note">Plano referencial de P1 a P7. Las plazas sin lectura válida no se consideran libres.</p>
-    </section>
-
-    <Modal
-      open={!!selected}
-      onOpenChange={open => { if (!open) { setSelected(null); setError('') } }}
-      title={selected ? 'Plaza ' + selected : 'Detalle de plaza'}
-      description="Estado del estacionamiento y opciones disponibles."
-      contentClassName="mobile-space-dialog"
+    <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}
+      title={selected ? 'Plaza ' + selected : 'Plaza'} description={selectMessage || 'Elige el horario de tu reserva.'}
+      contentClassName="parking-v2-sheet"
+      onContentTouchStart={onTouchStart} onContentTouchMove={onTouchMove} onContentTouchEnd={onTouchEnd}
     >
-      {current && <div className="mobile-space-modal-body">
-        <div className="mobile-space-modal-status"><StatusBadge status={status}/><span>{outdated ? 'Lectura antigua' : isLiveOccupancy ? 'Información de MySQL' : 'Datos de demostración'}</span></div>
-        <div className="mobile-space-modal-facts">
-          <div><MapPin size={16}/><span>Ubicación</span><strong>Planta única</strong></div>
-          <div><Radio size={16}/><span>Sensor</span><strong>{outdated ? 'Sin señal reciente' : isLiveOccupancy ? current.occupancy === 'UNKNOWN' ? 'Sin confirmar' : 'Último estado registrado' : 'Simulado'}</strong></div>
-          {isLiveOccupancy && <div><Clock3 size={16}/><span>Última lectura</span><strong>{lastReading}</strong></div>}
+      {space && (canReserve ? <form className="parking-v2-form" onSubmit={submitBooking}>
+        <div className="parking-v2-progress">
+          <span><Check size={14}/>Seleccionado</span>
+          <span><Clock3 size={14}/>{remainingSeconds} s para reservar</span>
         </div>
-
-        {canBook ? <form className="mobile-space-reserve" onSubmit={submitBooking}>
-          <h3>Reserva este espacio</h3>
-          <p>Elige cuándo llegarás. Esta reserva es una prueba local.</p>
-          <label htmlFor="mobile-space-date">Fecha</label>
-          <input id="mobile-space-date" type="date" min={localDate()} value={date} onChange={event => setDate(event.target.value)} required/>
-          <div className="mobile-space-form-row">
-            <div><label htmlFor="mobile-space-from">Llegada</label><input id="mobile-space-from" type="time" value={from} onChange={event => setFrom(event.target.value)} required/></div>
-            <div><label htmlFor="mobile-space-to">Salida</label><input id="mobile-space-to" type="time" value={to} onChange={event => setTo(event.target.value)} required/></div>
+        <div className="parking-v2-fields">
+          <label htmlFor="parking-v2-date">Fecha</label>
+          <input id="parking-v2-date" type="date" min={localDate()} value={date} onChange={event => setDate(event.target.value)} required/>
+          <div className="parking-v2-time-row">
+            <div><label htmlFor="parking-v2-from">Hora de inicio</label><input id="parking-v2-from" type="time" value={from} onChange={event => setFrom(event.target.value)} required/></div>
+            <div><label htmlFor="parking-v2-to">Hora de salida</label><input id="parking-v2-to" type="time" value={to} onChange={event => setTo(event.target.value)} required/></div>
           </div>
-          {(error || validation) && <p className="mobile-space-error" role="alert">{error || validation}</p>}
-          <Button className="w-full" type="submit" disabled={!!validation}>Confirmar reserva de prueba <Check size={17}/></Button>
-        </form> : <div className="mobile-space-unavailable">
-          {outdated ? <Clock3 size={19}/> : !confirmed ? <WifiOff size={19}/> : <LockKeyhole size={19}/>}
-          <span>{outdated ? 'Esperamos una lectura reciente para habilitar esta plaza.' :
-            status === 'occupied' ? 'Este espacio está ocupado. Prueba otra plaza.' :
-            status === 'reserved' ? 'Este espacio ya está reservado.' :
-            status === 'unknown' ? 'No hay una lectura confirmada de esta plaza.' :
-            'Las reservas reales estarán disponibles próximamente.'}</span>
-        </div>}
-        <p className="mobile-space-modal-footnote">La consulta de ocupación es independiente de las reservas y de los pagos reales.</p>
-      </div>}
+        </div>
+        {validation && <p className="parking-v2-error" role="alert">{validation}</p>}
+        {error && <p className="parking-v2-error" role="alert">{error}</p>}
+        <div className="parking-v2-price">
+          <div className="parking-v2-price-text">
+            <span>Total estimado · {quote.hours} h</span>
+            <strong>Bs {money(quote.total)}</strong>
+            <small>Tarifa demo: Bs {money(DEMO_RATE_BS)}/h</small>
+          </div>
+          <button type="submit" disabled={!!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
+        </div>
+      </form> : <div className="parking-v2-disabled">
+        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <CarTop/> : <LockKeyhole size={30}/>}</div>
+        <strong>{selectMessage}</strong>
+        <button type="button" onClick={closeSheet}>Entendido <X size={17}/></button>
+      </div>)}
     </Modal>
-  </div>
+  </section>
 }
