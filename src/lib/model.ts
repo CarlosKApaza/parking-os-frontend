@@ -49,7 +49,7 @@ export function displayStatus(space: Space, reservations: Reservation[], now = n
   if (space.occupancy === 'OCCUPIED') return 'occupied'
   return reservations.some(r => r.space === space.id && r.status === 'active' && new Date(`${r.date}T${r.from}`) <= now && now < new Date(`${r.date}T${r.to}`)) ? 'reserved' : 'free'
 }
-export function validateBooking(input: BookingInput, spaces: Space[], reservations: Reservation[], now = new Date()): string | null {
+export function validateBooking(input: BookingInput, spaces: Space[], reservations: Reservation[], now = new Date(), allowStaleDemo = false): string | null {
   const start = new Date(`${input.date}T${input.from}`)
   const end = new Date(`${input.date}T${input.to}`)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !/^\d{2}:\d{2}$/.test(input.from) || !/^\d{2}:\d{2}$/.test(input.to) || !Number.isFinite(+start) || !Number.isFinite(+end) || localDate(start) !== input.date) return 'Introduce una fecha y un horario válidos.'
@@ -57,7 +57,7 @@ export function validateBooking(input: BookingInput, spaces: Space[], reservatio
   if (end <= start) return 'La salida debe ser posterior a la llegada.'
   const space = spaces.find(s => s.id === input.space)
   if (!space || space.occupancy !== 'FREE') return 'Esta plaza ya no está disponible. Elige otra.'
-  if (space.isStale) return 'La última lectura del sensor es antigua. Espera una lectura nueva antes de reservar.'
+  if (space.isStale && !allowStaleDemo) return 'La última lectura del sensor es antigua. Espera una lectura nueva antes de reservar.'
   if (reservations.some(r => r.space === input.space && r.status === 'active' && start < new Date(`${r.date}T${r.to}`) && end > new Date(`${r.date}T${r.from}`))) return 'Ya existe una reserva para esta plaza en ese horario.'
   return null
 }
