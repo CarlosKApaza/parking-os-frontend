@@ -141,3 +141,6 @@
 @media(prefers-reduced-motion:reduce){
   .home-overview *{transition:none!important}
 }
+
+/* En Inicio ya solo queda la guía; debe ocupar todo el ancho disponible. */
+.home-overview-details{grid-template-columns:minmax(0,1fr)}
