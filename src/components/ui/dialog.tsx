@@ -2,11 +2,11 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-export function Modal({ open, onOpenChange, title, description, children }: { open: boolean; onOpenChange: (value: boolean) => void; title: string; description?: string; children: ReactNode }) {
+export function Modal({ open, onOpenChange, title, description, children, contentClassName }: { open: boolean; onOpenChange: (value: boolean) => void; title: string; description?: string; children: ReactNode; contentClassName?: string }) {
   return <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="dialog-overlay" />
-      <DialogPrimitive.Content className="dialog-content">
+      <DialogPrimitive.Content className={"dialog-content" + (contentClassName ? " " + contentClassName : "")}>
         <DialogPrimitive.Title className="dialog-title">{title}</DialogPrimitive.Title>
         <DialogPrimitive.Description className={description ? 'dialog-description' : 'sr-only'}>{description || title}</DialogPrimitive.Description>
         {children}
