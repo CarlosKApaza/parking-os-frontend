@@ -50,7 +50,7 @@ export function Layout() {
       <div className="sidebar-bottom"><div className="install-card"><div className="install-icon"><Download size={20}/></div><strong>Tu parking, siempre cerca.</strong><p>Instala la app y lleva tu espacio contigo.</p><button onClick={installClick} disabled={install.installed}>{install.installed ? 'Aplicación instalada' : 'Instalar Parking OS'}<ArrowUpRight size={15}/></button></div>
       <NavLink to="/perfil" className="sidebar-profile"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{isDemo ? 'Cuenta de demostración' : 'Consulta pública'}</small></span><ChevronRight size={16}/></NavLink></div>
     </aside>
-    <div className="workspace"><header className="topbar"><div className="breadcrumbs"><span>Mi estacionamiento</span><ChevronRight size={13}/><strong>{currentLabel}</strong></div><NavLink to="/" className="mobile-brand"><span className="brand-icon">P<span>•</span></span><b>parking<span>os</span></b></NavLink><div className="topbar-actions">
+    <div className="workspace"><header className="topbar"><div className="breadcrumbs"><span>Mi estacionamiento</span><ChevronRight size={13}/><strong>{currentLabel}</strong></div>{location.pathname === '/espacios' ? <span className="mobile-page-label">Espacios</span> : <NavLink to="/" className="mobile-brand"><span className="brand-icon">P<span>•</span></span><b>parking<span>os</span></b></NavLink>}<div className="topbar-actions">
       <span className="location-label"><MapPin size={15}/>Estacionamiento principal</span>
       <span className="mode-pill"><i/>{isLiveOccupancy ? 'Plazas reales' : 'Modo demo'}</span>
       <div className="header-quick-actions" ref={quickActionsRef}>
