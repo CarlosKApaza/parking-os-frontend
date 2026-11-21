@@ -117,7 +117,6 @@ export function SpacesPage() {
   const selectMessage = status === 'occupied' ? 'Plaza ocupada' :
     status === 'reserved' ? 'Plaza reservada' :
     status === 'unknown' || !confirmed ? 'Plaza bloqueada' :
-    !isDemo ? 'Reservas aún no disponibles' :
     !myHold ? (selected && ownerOf(selected) === 'other' ? 'Otro usuario está seleccionando esta plaza' : 'Vuelve a tocar la plaza para seleccionarla') : ''
 
   return <section className="parking-v2" aria-label="Estacionamientos de la maqueta">
