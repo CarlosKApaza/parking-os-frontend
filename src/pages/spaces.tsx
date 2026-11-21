@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
 import { Check, Clock3, LockKeyhole, MapPin, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
-import { CarOverhead } from '@/components/shared'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
 import { money, localDate, tomorrow } from '@/lib/utils'
@@ -149,7 +148,7 @@ export function SpacesPage() {
           >
             <span className="parking-v2-code">{id}</span>
             <span className="parking-v2-icon">
-              {itemStatus === 'occupied' ? <CarOverhead/> :
+              {itemStatus === 'occupied' ? <img src="/parking-car-reference.webp" className="parking-v2-car-image" alt="" draggable={false} /> :
                 selecting ? <Check size={23}/> :
                 locked ? <span className="parking-v2-lock-inline"><LockKeyhole size={24}/><span>{displayed}</span></span> :
                 <Plus size={26}/>}
@@ -198,7 +197,7 @@ export function SpacesPage() {
           <button type="submit" disabled={!!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
         </div>
       </form> : <div className="parking-v2-disabled">
-        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <CarOverhead/> : <LockKeyhole size={30}/>}</div>
+        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <img src="/parking-car-reference.webp" className="parking-v2-car-image" alt="" draggable={false} /> : <LockKeyhole size={30}/>}</div>
         <strong>{selectMessage}</strong>
         <button type="button" onClick={closeSheet}>Entendido <X size={17}/></button>
       </div>)}
