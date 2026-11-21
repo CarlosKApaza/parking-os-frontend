@@ -76,11 +76,12 @@ export function Layout() {
           </motion.section>}</AnimatePresence>
         </div>
       </div>
+    </div>
       {location.pathname === '/espacios' && <div className="topbar-spaces-summary">
         <span className="topbar-spaces-place"><MapPin size={15}/>Maqueta física <span aria-hidden="true">·</span> Planta única</span>
         <span className="topbar-spaces-free"><strong>{String(stats.free).padStart(2, '0')}</strong> libres</span>
       </div>}
-    </div></header>
+    </header>
       <main id="main-content" className="main-content" tabIndex={-1}><ConnectionBanner/><motion.div key={location.pathname} initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .22 }}><Outlet/></motion.div><footer className="page-footer"><span><CircleParking size={14}/> Parking OS</span><span>Menos vueltas. Más tiempo para ti.</span><span>{isDemo ? 'Experiencia de demostración' : 'Estacionamiento inteligente'}</span></footer></main>
     </div>
     <nav className="bottom-nav" aria-label="Navegación móvil">{navigation.map(({ to, label, Icon }) => <NavLink key={to} to={to} aria-label={label} end={to === '/'} className={({ isActive }) => `bottom-nav-link${isActive ? ' active' : ''}${to === '/pago' ? ' pay-nav-link' : ''}`}><Icon size={21}/><span>{label}</span></NavLink>)}</nav>
