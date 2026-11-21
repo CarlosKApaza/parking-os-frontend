@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowUpRight, CarFront, CalendarDays, CheckCircle2, Coins, Crown, Cpu, LockKeyhole, ParkingSquare, Plus, RadioTower, ScanLine, Wallet, WifiOff } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, CarFront, CalendarDays, CheckCircle2, Coins, Crown, LockKeyhole, ParkingSquare, Plus, RadioTower, ScanLine, Wallet, WifiOff } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { money } from '@/lib/utils'
 
@@ -8,7 +8,7 @@ export function WalletCard({ full = false }: { full?: boolean }) {
   return <section className={`wallet-card ${full ? 'wallet-full' : ''}`} aria-label="Mi billetera"><div className="wallet-heading"><span><Wallet size={18}/>MI BILLETERA</span><span className="wallet-mark">P<span>•</span></span></div><div className="wallet-main"><div><p>Saldo disponible{isDemo ? ' · demo' : ''}</p><div className="balance"><span>Bs</span>{isDemo ? money(demo.balance) : '—'}</div></div><div className="wallet-benefits"><span><Coins size={15}/><b>{isDemo ? demo.tokens : '—'}</b> tokens</span><span><Crown size={15}/>{isDemo && demo.plus ? 'Plus activo' : 'Plan estándar'}</span></div></div><div className="wallet-actions"><Link to="/billetera?tab=saldo"><Plus size={17}/>Recargar</Link><Link to="/billetera?tab=tokens"><Coins size={17}/>Tokens</Link><Link to="/billetera?tab=planes"><Crown size={17}/>Planes<ArrowUpRight size={13}/></Link></div>{!full && <Link className="wallet-history" to="/billetera?tab=movimientos">Ver mis movimientos<ArrowRight size={15}/></Link>}</section>
 }
 export function HomePage() {
-  const { stats, spaces, statusOf, confirmed, isDemo, isLiveOccupancy } = useParkingStore()
+  const { stats, spaces, statusOf, confirmed, isLiveOccupancy } = useParkingStore()
   const staleCount = isLiveOccupancy ? spaces.filter(space => space.isStale && space.occupancy !== 'UNKNOWN').length : 0
   const total = spaces.length
   const statusText = !confirmed ? 'Sin conexión' : isLiveOccupancy ? 'Datos de MySQL' : 'Modo demostración'
@@ -86,19 +86,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="home-overview-about" aria-labelledby="home-about-title">
-        <div className="home-overview-section-head">
-          <span className="home-overview-eyebrow">NUESTRO PROYECTO</span>
-          <h2 id="home-about-title">¿Qué es Parking OS?</h2>
-        </div>
-        <p>Un prototipo de estacionamiento inteligente desarrollado para <strong>Sistemas de Tiempo Real (COM460)</strong> de la USFX.</p>
-        <div className="home-overview-pipeline" aria-label="Componentes del proyecto">
-          <span><Cpu size={15}/> ESP32</span><ArrowRight size={14}/><span>API NestJS</span><ArrowRight size={14}/><span>MySQL</span>
-        </div>
-        <p className="home-overview-team">Los sensores infrarrojos detectan ocupación y los servomotores controlan las barreras. La web muestra los estados registrados.</p>
-        <div className="home-overview-credit">Carlos Apaza · Jhonny Orco <span>— Equipo Parking OS</span></div>
-      </section>
+
     </div>
-    <span className="home-overview-demo-note">{isDemo ? 'Reservas y pagos: demostración, sin operaciones comerciales.' : 'Los módulos comerciales siguen en desarrollo.'}</span>
   </div>
 }
