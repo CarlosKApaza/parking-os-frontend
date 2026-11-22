@@ -87,7 +87,7 @@ export function SecurityPage() {
       <div className="security-live-meta">
         <span className="security-live-camera-icon"><Camera size={19}/></span>
         <div><strong>{current.name}</strong><small>{current.zone} · Maqueta física</small></div>
-        <span className="security-live-quality">LIVE</span>
+        <span className="security-live-quality">UVC</span>
       </div>
 
       <div className="security-live-stage" ref={frameRef}>
