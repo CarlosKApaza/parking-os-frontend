@@ -1,13 +1,127 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowRight, Check, Crown, LockKeyhole, ShieldCheck, Video, VideoOff } from 'lucide-react'
-import { DemoNote, PageTitle } from '@/components/shared'
-import { Button } from '@/components/ui/button'
-import { useParkingStore } from '@/context/parking-context'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Camera, Maximize2, RefreshCw, VideoOff, WifiOff } from 'lucide-react'
+import { cameraSources } from '@/services/camera'
+
+type CameraStatus = 'checking' | 'online' | 'offline' | 'unsupported'
 
 export function SecurityPage() {
-  const { demo, isDemo } = useParkingStore()
-  const [camera, setCamera] = useState(1)
-  const subscribed = isDemo && demo.plus
-  return <><PageTitle eyebrow="TRANQUILIDAD, INCLUSO A DISTANCIA" title="Tu vehículo, más cerca" description="Un espacio pensado para acompañarte mientras sigues con tu día." action={<span className="date-chip"><ShieldCheck size={16}/>Parking Plus</span>}/>{!subscribed ? <div className="security-hero"><div className="security-art"><div className="security-orbit orbit-1"/><div className="security-orbit orbit-2"/><div className="security-orbit orbit-3"/><div className="shield-art"><ShieldCheck size={87} strokeWidth={1.1}/></div><span className="floating-camera cam-1"><Video size={23}/><i/></span><span className="floating-camera cam-2"><LockKeyhole size={21}/></span><span className="security-art-caption"><LockKeyhole size={13}/>SOLO PARA TI</span></div><div className="security-copy"><span className="plus-tag"><Crown size={14}/>PARKING PLUS</span><h2>Estaciona.<br/>Sigue con tranquilidad.</h2><p>Tu próxima experiencia incluye un espacio para consultar las cámaras autorizadas de tu vehículo.</p><ul><li><Check size={17}/>Dos vistas de cámara previstas</li><li><Check size={17}/>Acceso limitado a usuarios autorizados</li><li><Check size={17}/>La privacidad, siempre presente</li></ul><Button asChild><Link to="/billetera?tab=planes">Conocer Parking Plus<ArrowRight size={18}/></Link></Button><DemoNote>Servicio futuro. No hay cámaras ni vigilancia activa.</DemoNote></div></div> : <div className="camera-layout"><section className="camera-main"><div className="camera-title"><h2>Cámara 0{camera}</h2><span className="offline-camera"><i/>Sin transmisión</span></div><div className="camera-feed"><div className="camera-grid"/><VideoOff size={45} strokeWidth={1.3}/><h3>Tu próxima vista, aquí.</h3><p>La transmisión todavía no está conectada.</p><span className="camera-feed-label">CAM-0{camera} · {camera === 1 ? 'ZONA DE ACCESO' : 'ZONA DE PLAZAS'}</span></div><p className="camera-footer"><LockKeyhole size={15}/>Acceso de demostración. El video real requerirá autorización individual.</p></section><aside className="camera-picker"><h2>Tus cámaras</h2>{[1,2].map(id => <button className={camera === id ? 'camera-option active' : 'camera-option'} key={id} onClick={() => setCamera(id)}><div className="camera-thumb"><VideoOff size={23}/><span>Sin transmisión</span></div><div><strong>Cámara 0{id}</strong><small>{id === 1 ? 'Zona de acceso' : 'Zona de plazas'}</small></div>{camera === id && <Check size={17}/>}</button>)}<div className="camera-privacy"><ShieldCheck size={26}/><h3>Tu privacidad importa.</h3><p>Las vistas reales estarán limitadas a tu vehículo y a las zonas autorizadas.</p></div></aside></div>}<div className="security-footnote"><ShieldCheck size={20}/><span>Las cámaras y sus permisos se incorporarán en una siguiente etapa.</span></div></>
+  const sources = useMemo(() => cameraSources(), [])
+  const [cameraId, setCameraId] = useState(sources[0].id)
+  const current = sources.find(source => source.id === cameraId) ?? sources[0]
+  const [status, setStatus] = useState<CameraStatus>('checking')
+  const [streamFailed, setStreamFailed] = useState(false)
+  const [revision, setRevision] = useState(0)
+  const [fullscreenError, setFullscreenError] = useState('')
+  const frameRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    if (!current.baseUrl) {
+      setStatus('unsupported')
+      return
+    }
+    const baseUrl = current.baseUrl
+    setStatus('checking')
+    setStreamFailed(false)
+    async function checkCamera() {
+      try {
+        const response = await fetch(baseUrl + '/health', {
+          cache: 'no-store',
+          signal: AbortSignal.timeout(3500),
+          headers: { Accept: 'application/json' },
+        })
+        if (!response.ok) throw new Error('Camera HTTP ' + response.status)
+        const result = await response.json() as { online?: boolean }
+        if (!cancelled) setStatus(result.online === true ? 'online' : 'offline')
+      } catch {
+        if (!cancelled) setStatus('offline')
+      }
+    }
+    void checkCamera()
+    const timer = window.setInterval(() => { void checkCamera() }, 5000)
+    return () => { cancelled = true; window.clearInterval(timer) }
+  }, [current.baseUrl, revision])
+
+  function reconnect() {
+    setStreamFailed(false)
+    setFullscreenError('')
+    setRevision(previous => previous + 1)
+  }
+
+  function expand() {
+    const frame = frameRef.current
+    if (!frame || typeof frame.requestFullscreen !== 'function') {
+      setFullscreenError('Pantalla completa no disponible en este navegador.')
+      return
+    }
+    void frame.requestFullscreen().catch(() => setFullscreenError('El navegador no permitió ampliar el video.'))
+  }
+
+  const active = status === 'online' && !streamFailed
+  const label = active ? 'En vivo' : status === 'checking' ? 'Conectando' : 'Sin señal'
+  const guidance = status === 'unsupported'
+    ? 'La cámara requiere una dirección HTTPS si la aplicación usa HTTPS.'
+    : streamFailed
+      ? 'Se interrumpió el video. Pulsa Reintentar.'
+      : status === 'checking'
+        ? 'Buscando cámara en tu red...'
+        : 'Enciende camara_seguridad.py en la PC y conecta el celular al mismo Wi-Fi.'
+
+  return <section className="security-live" aria-label="Videovigilancia de Parking OS">
+    <div className="security-live-heading">
+      <h1>Seguridad</h1>
+      <span className={'security-live-indicator ' + (active ? 'is-online' : '')} role="status">
+        <i aria-hidden="true"/>{label}
+      </span>
+    </div>
+
+    {sources.length > 1 && <div className="security-live-tabs" role="group" aria-label="Seleccionar cámara">
+      {sources.map(source => <button key={source.id} type="button"
+        className={source.id === current.id ? 'is-active' : ''}
+        aria-pressed={source.id === current.id} onClick={() => setCameraId(source.id)}>
+        {source.name}
+      </button>)}
+    </div>}
+
+    <div className="security-live-card">
+      <div className="security-live-meta">
+        <span className="security-live-camera-icon"><Camera size={19}/></span>
+        <div><strong>{current.name}</strong><small>{current.zone} · Maqueta física</small></div>
+        <span className="security-live-quality">LIVE</span>
+      </div>
+
+      <div className="security-live-stage" ref={frameRef}>
+        {active && current.baseUrl && <img
+          key={current.id + ':' + revision}
+          src={current.baseUrl + '/video?rev=' + revision}
+          alt={'Video en directo: ' + current.zone}
+          className="security-live-stream"
+          onError={() => setStreamFailed(true)}
+          draggable={false}
+        />}
+        {!active && <div className="security-live-placeholder">
+          {status === 'checking' ? <RefreshCw className="security-live-rotating" size={30}/> :
+            status === 'unsupported' ? <WifiOff size={35}/> : <VideoOff size={37}/>}
+          <strong>{status === 'checking' ? 'Conectando con la cámara' : 'Cámara no disponible'}</strong>
+          <p>{guidance}</p>
+          {status !== 'checking' && <button type="button" onClick={reconnect}><RefreshCw size={16}/>Reintentar</button>}
+        </div>}
+        {active && <span className="security-live-overlay">● EN VIVO</span>}
+      </div>
+    </div>
+
+    <div className="security-live-toolbar">
+      <span>Vista compartida en red local</span>
+      <div>
+        <button type="button" onClick={reconnect} aria-label="Reconectar transmisión" title="Reconectar">
+          <RefreshCw size={18}/><span>Reconectar</span>
+        </button>
+        <button type="button" onClick={expand} disabled={!active} aria-label="Ampliar cámara" title="Pantalla completa">
+          <Maximize2 size={18}/><span>Ampliar</span>
+        </button>
+      </div>
+    </div>
+    {fullscreenError && <p className="security-live-message" role="status">{fullscreenError}</p>}
+    <p className="security-live-note">Prototipo en Wi-Fi local · Sin grabación ni reconocimiento facial</p>
+  </section>
 }
