@@ -6,12 +6,11 @@ import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
 import { money, localDate, tomorrow } from '@/lib/utils'
 import { DEMO_RATE_BS, quoteParking } from '@/lib/pricing'
 import { useSpaceHold } from '@/hooks/use-space-hold'
+import { carDirection } from '@/lib/car-direction'
 
 const order: (SpaceCode | null)[] = ['P1', 'P5', 'P2', 'P6', 'P3', 'P7', 'P4', null]
 
-// El archivo WebP original mira a la izquierda (faros a la izquierda).
-// Voltearlo solo para las plazas P1–P4 (lado izquierdo), cuyo frente debe mirar a la derecha.
-const flipToRight = (code: SpaceCode | null) => code === 'P1' || code === 'P2' || code === 'P3' || code === 'P4'
+
 
 export function SpacesPage() {
   const { spaces, statusOf, stats, confirmed, isDemo, isLiveOccupancy, reservations, book, setNotice } = useParkingStore()
@@ -152,7 +151,7 @@ export function SpacesPage() {
           >
             <span className="parking-v2-code">{id}</span>
             <span className="parking-v2-icon">
-              {itemStatus === 'occupied' ? <img src="/parking-car-realistic.webp" className={'parking-v2-car-image' + (flipToRight(id) ? ' parking-v2-car--facing-left' : '')} alt="" draggable={false} /> :
+              {itemStatus === 'occupied' ? <img src="/parking-car-realistic.webp" className={'parking-v2-car-image parking-v2-car--' + carDirection(id)} alt="" draggable={false} /> :
                 selecting ? <Check size={23}/> :
                 locked ? <span className="parking-v2-lock-inline"><LockKeyhole size={24}/><span>{displayed}</span></span> :
                 <Plus size={26}/>}
@@ -201,7 +200,7 @@ export function SpacesPage() {
           <button type="submit" disabled={!!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
         </div>
       </form> : <div className="parking-v2-disabled">
-        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <img src="/parking-car-realistic.webp" className={'parking-v2-car-image' + (flipToRight(selected) ? ' parking-v2-car--facing-left' : '')} alt="" draggable={false} /> : <LockKeyhole size={30}/>}</div>
+        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <img src="/parking-car-realistic.webp" className={'parking-v2-car-image parking-v2-car--' + carDirection(selected!)} alt="" draggable={false} /> : <LockKeyhole size={30}/>}</div>
         <strong>{selectMessage}</strong>
         <button type="button" onClick={closeSheet}>Entendido <X size={17}/></button>
       </div>)}
