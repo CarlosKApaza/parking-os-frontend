@@ -1,0 +1,170 @@
+/* Parking OS · Videovigilancia de la maqueta (una cámara UVC real). */
+.security-live{
+  width:min(100%,1040px);
+  margin:0 auto;
+  padding:8px 0 28px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  color:#f4f7f6;
+}
+.security-live-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.security-live-heading h1{font-size:28px;font-weight:800;letter-spacing:-.045em;line-height:1.15}
+.security-live-indicator{
+  display:inline-flex;align-items:center;gap:7px;
+  color:#adb8be;font-size:12px;font-weight:700;white-space:nowrap;
+}
+.security-live-indicator i{width:8px;height:8px;background:#87929d;border-radius:50%}
+.security-live-indicator.is-online{color:#abebcb}
+.security-live-indicator.is-online i{background:#69d5a0;box-shadow:0 0 0 3px #6cdaaa1f}
+.security-live-card{
+  background:#1d2428;
+  border:1px solid #35413e;
+  border-radius:22px;
+  overflow:hidden;
+  padding:15px;
+  box-shadow:0 10px 36px #0000001a;
+}
+.security-live-meta{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:2px 3px 14px;
+}
+.security-live-camera-icon{
+  flex:none;display:grid;place-items:center;
+  width:38px;height:38px;border-radius:12px;
+  background:#2d4339;color:#b3ecd0;
+}
+.security-live-meta div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.security-live-meta strong{font-size:14px;font-weight:800;letter-spacing:-.02em}
+.security-live-meta small{color:#a0b0b3;font-size:11px}
+.security-live-quality{
+  margin-left:auto;font-size:10px;letter-spacing:.12em;
+  color:#afbec2;font-weight:850;
+}
+.security-live-stage{
+  position:relative;aspect-ratio:16 / 9;width:100%;
+  min-height:245px;
+  background:#090e12;
+  border:1px solid #33413f;
+  overflow:hidden;
+  border-radius:15px;
+  display:grid;place-items:center;
+}
+.security-live-stream{display:block;width:100%;height:100%;object-fit:contain;user-select:none}
+.security-live-overlay{
+  position:absolute;left:13px;top:13px;
+  background:#10251edb;border:1px solid #3c7254;
+  color:#a9e8c9;font-size:10px;letter-spacing:.08em;font-weight:850;
+  padding:6px 10px;border-radius:99px;
+}
+.security-live-placeholder{
+  position:absolute;inset:0;z-index:1;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  gap:11px;padding:22px;
+  color:#b0bec5;text-align:center;
+}
+.security-live-placeholder>svg{color:#81959d}
+.security-live-placeholder strong{font-size:17px;font-weight:760;letter-spacing:-.03em;color:#e1e7e9}
+.security-live-placeholder p{max-width:380px;color:#96a5aa;font-size:12px;line-height:1.65}
+.security-live-placeholder button{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin-top:5px;padding:11px 17px;border-radius:11px;
+  background:#aaf0ca;color:#122e25;font-size:12px;font-weight:800;
+}
+.security-live-rotating{animation:parking-camera-spin 1.5s linear infinite}
+@keyframes parking-camera-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.security-live-rotating{animation:none}}
+.security-live-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.security-live-toolbar>span{color:#a7b9b9;font-size:12px;font-weight:650}
+.security-live-toolbar>div{display:flex;align-items:center;gap:8px}
+.security-live-toolbar button{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:#272d30;border:1px solid #3a4449;border-radius:12px;
+  padding:10px 13px;color:#dde9e9;font-size:11px;font-weight:700;
+}
+.security-live-toolbar button:hover{background:#33413d}
+.security-live-toolbar button:disabled{opacity:.35;cursor:not-allowed}
+.security-live-note{
+  padding:4px 0;text-align:center;
+  color:#788b90;font-size:10px;line-height:1.5;
+}
+.security-live-message{color:#f1c5af;font-size:11px;text-align:right}
+.security-live-tabs{display:flex;gap:8px;overflow-x:auto}
+.security-live-tabs button{
+  background:#252b2f;border:1px solid #3c454b;color:#b2bdc1;
+  padding:11px 15px;border-radius:99px;font-size:12px;font-weight:700;
+}
+.security-live-tabs button.is-active{color:#143728;background:#aaf0ca;border-color:#aaf0ca}
+.security-live-stage:fullscreen{
+  aspect-ratio:auto;width:100vw;height:100vh;min-height:0;max-height:none;
+  border:0;border-radius:0;background:#030608;
+}
+.security-live-stage:fullscreen .security-live-stream{object-fit:contain}
+.topbar-security-summary{display:none}
+
+@media(max-width:760px){
+  /* Mismo criterio visual del módulo Espacios: localización izquierda, cuenta derecha. */
+  .workspace:has(.security-live)>.topbar.topbar-security{
+    display:grid;grid-template-columns:minmax(0,1fr) max-content;
+    grid-template-rows:1fr;
+    column-gap:9px;align-items:center;
+    height:74px;min-height:74px;
+    padding:6px 14px 8px;background:transparent;border:0;
+  }
+  .workspace:has(.security-live) .topbar-security .breadcrumbs,
+  .workspace:has(.security-live) .topbar-security .mobile-page-label,
+  .workspace:has(.security-live) .topbar-security .location-label,
+  .workspace:has(.security-live) .topbar-security .mode-pill{display:none!important}
+  .workspace:has(.security-live) .topbar-security-summary{
+    grid-column:1;grid-row:1;display:flex;align-items:center;gap:4px;min-width:0;
+    color:#c8d6d7;font-size:11px;font-weight:650;white-space:nowrap;
+  }
+  .workspace:has(.security-live) .topbar-security-summary svg{color:#b5cdd0;flex:none}
+  .workspace:has(.security-live) .topbar-security-summary span:nth-last-child(2){color:#66797c}
+  .workspace:has(.security-live) .topbar-security .topbar-actions{
+    grid-column:2;grid-row:1;justify-self:end;display:flex;align-items:center;
+    justify-content:flex-end;margin:0;padding:0;min-width:0;
+  }
+  .workspace:has(.security-live) .header-quick-actions{display:flex;gap:7px}
+  .workspace:has(.security-live) .notification-button,
+  .workspace:has(.security-live) .quick-profile-trigger{
+    display:grid;place-items:center;width:38px;height:38px;
+    border-radius:50%;background:#293a33;border:1px solid #3c5046;
+    color:#e6f0ee;
+  }
+  .workspace:has(.security-live) .quick-menu-panel{
+    position:absolute;right:0;left:auto;top:calc(100% + 12px);
+    width:min(310px,calc(100vw - 28px));max-width:calc(100vw - 28px);z-index:80;
+  }
+  .workspace:has(.security-live) .notifications-panel{right:-46px}
+  .workspace:has(.security-live) .main-content{
+    max-width:none;width:100%;margin:0;padding:0 13px calc(92px + env(safe-area-inset-bottom));
+  }
+  .workspace:has(.security-live) .page-footer{display:none}
+  .security-live{padding:6px 0 0;gap:12px}
+  .security-live-heading h1{font-size:22px}
+  .security-live-indicator{font-size:11px}
+  .security-live-card{padding:9px;border-radius:18px}
+  .security-live-meta{padding:1px 5px 12px;gap:9px}
+  .security-live-camera-icon{width:35px;height:35px;border-radius:10px}
+  .security-live-meta strong{font-size:13px}
+  .security-live-meta small{font-size:10px}
+  .security-live-stage{aspect-ratio:16 / 10;min-height:220px;border-radius:11px}
+  .security-live-placeholder{padding:13px;gap:9px}
+  .security-live-placeholder strong{font-size:15px}
+  .security-live-placeholder p{font-size:11px}
+  .security-live-toolbar>span{font-size:10px;max-width:45%}
+  .security-live-toolbar button{width:42px;height:40px;padding:0}
+  .security-live-toolbar button span{display:none}
+  .security-live-note{font-size:9px}
+}
+@media(max-width:370px){
+  .workspace:has(.security-live)>.topbar.topbar-security{padding-inline:10px;column-gap:4px}
+  .workspace:has(.security-live) .topbar-security-summary{font-size:10px}
+  .workspace:has(.security-live) .header-quick-actions{gap:5px}
+  .workspace:has(.security-live) .notification-button,
+  .workspace:has(.security-live) .quick-profile-trigger{width:35px;height:35px}
+}
