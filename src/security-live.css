@@ -103,7 +103,7 @@
   border:0;border-radius:0;background:#030608;
 }
 .security-live-stage:fullscreen .security-live-stream{object-fit:contain}
-.topbar-security-summary{display:none}
+.topbar-security-summary,.topbar-security>.mobile-page-label{display:none}
 
 @media(max-width:760px){
   /* Mismo criterio visual del módulo Espacios: localización izquierda, cuenta derecha. */
