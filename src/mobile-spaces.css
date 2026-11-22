@@ -639,3 +639,10 @@
     height:35px;
   }
 }
+
+/* Orientacion de vehiculos segun el lado del pasillo.
+   El WebP original mira a la derecha (P1-P4); P5-P7 se reflejan horizontalmente. */
+.parking-v2-slot.occupied .parking-v2-car-image.parking-v2-car--facing-left,
+.parking-v2-disabled-icon .parking-v2-car-image.parking-v2-car--facing-left {
+  transform: scaleX(-1);
+}
