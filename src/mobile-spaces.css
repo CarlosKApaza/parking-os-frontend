@@ -640,9 +640,13 @@
   }
 }
 
-/* Orientacion de vehiculos segun el lado del pasillo.
-   El WebP original mira a la derecha (P1-P4); P5-P7 se reflejan horizontalmente. */
-.parking-v2-slot.occupied .parking-v2-car-image.parking-v2-car--facing-left,
-.parking-v2-disabled-icon .parking-v2-car-image.parking-v2-car--facing-left {
+/* El recurso original mira a la izquierda. Girar solo P1-P4 para mirar
+   hacia el pasillo central; P5-P7 conservan su orientacion original. */
+.parking-v2-slot.occupied .parking-v2-car-image.parking-v2-car--right,
+.parking-v2-disabled-icon .parking-v2-car-image.parking-v2-car--right {
   transform: scaleX(-1);
+}
+.parking-v2-slot.occupied .parking-v2-car-image.parking-v2-car--left,
+.parking-v2-disabled-icon .parking-v2-car-image.parking-v2-car--left {
+  transform: none;
 }
