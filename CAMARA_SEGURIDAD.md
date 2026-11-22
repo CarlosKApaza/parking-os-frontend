@@ -91,3 +91,25 @@ El servicio Python incluye un punto de extension `CameraHub.get_latest_frame()`.
 ## Privacidad
 
 Esta fase es solo para demostracion, en una red privada y supervisada. **Cualquier dispositivo en la red que conozca la direccion puede ver la imagen.** No exponer la UVC a Internet. Antes de uso fuera de la feria se necesitan autenticacion, autorizacion por usuario, conexiones HTTPS y una politica de tratamiento de imagenes.
+
+## Más FPS (21/11/2026)
+
+El archivo `camaraSeguridadCompleta.py` utiliza por defecto **10 FPS**. Para transmitir hasta
+**20 FPS**, cierra primero el proceso anterior con Ctrl+C y vuelve a iniciarlo:
+
+```powershell
+py -u .\camaraSeguridadCompleta.py --camera 1 --backend dshow --port 8765 --fps 20 --quality 70
+```
+
+Usa `--backend msmf` en lugar de `dshow` si ése es el controlador con el que tu UVC funciona.
+Para evitar consumo de recursos no es necesario utilizar `--preview`.
+
+El frontend ahora ofrece dos modalidades en Seguridad:
+- **Alta fluidez (MJPEG)**: disponible por defecto, usa `/video` para transmitir fotogramas sin peticiones HTTP individuales.
+- **Compatible (JPEG)**: botón de cámara en la barra inferior del visor, usa `/snapshot.jpg`, con hasta unas 6-10 imágenes por segundo según el equipo y la red.
+
+Si el navegador no acepta MJPEG, el componente cambia automáticamente a modo compatible.
+La cantidad de FPS que se consigue realmente depende también del hardware UVC,
+del controlador de Windows, de la resolución y de cuántos clientes estén viendo la transmisión.
+En redes con muchos clientes conviene usar WebRTC o un servidor multimedia dedicado.
+
