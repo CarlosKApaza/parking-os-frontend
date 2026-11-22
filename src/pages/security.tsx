@@ -32,7 +32,11 @@ export function SecurityPage() {
         })
         if (!response.ok) throw new Error('Camera HTTP ' + response.status)
         const result = await response.json() as { online?: boolean }
-        if (!cancelled) setStatus(result.online === true ? 'online' : 'offline')
+        if (!cancelled) {
+          setStatus(result.online === true ? 'online' : 'offline')
+          // Si la cámara vuelve a estar disponible, reintenta abrir el MJPEG.
+          if (result.online === true) setStreamFailed(false)
+        }
       } catch {
         if (!cancelled) setStatus('offline')
       }
