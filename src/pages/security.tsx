@@ -17,6 +17,8 @@ export function SecurityPage() {
   const [status, setStatus] = useState<CameraStatus>('checking')
   const [frameUrl, setFrameUrl] = useState<string | null>(null)
   const [revision, setRevision] = useState(0)
+  // MJPEG ofrece mas FPS; las imagenes JPEG siguen siendo el modo compatible.
+  const [fluidMode, setFluidMode] = useState(true)
   const [lastError, setLastError] = useState('')
   const [fullscreenError, setFullscreenError] = useState('')
   const frameRef = useRef<HTMLDivElement>(null)
@@ -86,7 +88,8 @@ export function SecurityPage() {
       } finally {
         window.clearTimeout(watchdog)
         if (activeController === controller) activeController = undefined
-        if (!cancelled) refreshTimer = window.setTimeout(loadFrame, 450)
+        // Con MJPEG no es necesario descargar una foto nueva constantemente.
+        if (!cancelled) refreshTimer = window.setTimeout(loadFrame, fluidMode ? 2000 : 100)
       }
     }
     void loadFrame()
@@ -97,7 +100,7 @@ export function SecurityPage() {
       activeController?.abort()
       recentObjectUrls.forEach(url => URL.revokeObjectURL(url))
     }
-  }, [current.baseUrl, revision])
+  }, [current.baseUrl, revision, fluidMode])
 
   function reconnect() {
     setFullscreenError('')
@@ -147,9 +150,10 @@ export function SecurityPage() {
       </div>
       <div className="security-live-stage" ref={frameRef}>
         {active && frameUrl && <img
-          src={frameUrl}
+          src={fluidMode && current.baseUrl ? current.baseUrl + '/video?rev=' + revision : frameUrl}
           alt={'Video en directo: ' + current.zone}
           className="security-live-stream"
+          onError={() => { if (fluidMode) setFluidMode(false) }}
           draggable={false}
         />}
         {!active && <div className="security-live-placeholder">
@@ -164,8 +168,13 @@ export function SecurityPage() {
     </div>
 
     <div className="security-live-toolbar">
-      <span>Vista compartida en red local</span>
+      <span>Vista compartida · {fluidMode ? 'Alta fluidez' : 'Modo compatible'}</span>
       <div>
+        <button type="button" onClick={() => setFluidMode(value => !value)}
+          aria-label={fluidMode ? 'Usar modo compatible' : 'Activar alta fluidez'}
+          title={fluidMode ? 'Modo compatible (JPEG)' : 'Alta fluidez (MJPEG)'}>
+          <Camera size={18}/><span>{fluidMode ? 'Compatible' : 'Más FPS'}</span>
+        </button>
         <button type="button" onClick={reconnect} aria-label="Reconectar transmisión" title="Reconectar">
           <RefreshCw size={18}/><span>Reconectar</span>
         </button>
