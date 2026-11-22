@@ -50,7 +50,7 @@ export function Layout() {
       <div className="sidebar-bottom"><div className="install-card"><div className="install-icon"><Download size={20}/></div><strong>Tu parking, siempre cerca.</strong><p>Instala la app y lleva tu espacio contigo.</p><button onClick={installClick} disabled={install.installed}>{install.installed ? 'Aplicación instalada' : 'Instalar Parking OS'}<ArrowUpRight size={15}/></button></div>
       <NavLink to="/perfil" className="sidebar-profile"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{isDemo ? 'Cuenta de demostración' : 'Consulta pública'}</small></span><ChevronRight size={16}/></NavLink></div>
     </aside>
-    <div className="workspace"><header className={location.pathname === "/espacios" ? "topbar topbar-spaces" : "topbar"}><div className="breadcrumbs"><span>Mi estacionamiento</span><ChevronRight size={13}/><strong>{currentLabel}</strong></div>{location.pathname === '/espacios' ? <span className="mobile-page-label">Espacios</span> : <NavLink to="/" className="mobile-brand"><span className="brand-icon">P<span>•</span></span><b>parking<span>os</span></b></NavLink>}<div className="topbar-actions">
+    <div className="workspace"><header className={location.pathname === "/espacios" ? "topbar topbar-spaces" : location.pathname === "/seguridad" ? "topbar topbar-security" : "topbar"}><div className="breadcrumbs"><span>Mi estacionamiento</span><ChevronRight size={13}/><strong>{currentLabel}</strong></div>{location.pathname === '/espacios' || location.pathname === '/seguridad' ? <span className="mobile-page-label">{location.pathname === '/espacios' ? 'Espacios' : 'Seguridad'}</span> : <NavLink to="/" className="mobile-brand"><span className="brand-icon">P<span>•</span></span><b>parking<span>os</span></b></NavLink>}<div className="topbar-actions">
       <span className="location-label"><MapPin size={15}/>Estacionamiento principal</span>
       <span className="mode-pill"><i/>{isLiveOccupancy ? 'Plazas reales' : 'Modo demo'}</span>
       <div className="header-quick-actions" ref={quickActionsRef}>
@@ -77,12 +77,13 @@ export function Layout() {
         </div>
       </div>
     </div>
+      {location.pathname === '/seguridad' && <div className="topbar-security-summary"><MapPin size={15}/><span>Maqueta física</span><span aria-hidden="true">·</span><span>Zona de acceso</span></div>}
       {location.pathname === '/espacios' && <div className="topbar-spaces-summary">
         <span className="topbar-spaces-place"><MapPin size={15}/>Maqueta física <span aria-hidden="true">·</span> Planta única</span>
         <span className="topbar-spaces-free"><strong>{String(stats.free).padStart(2, '0')}</strong> libres</span>
       </div>}
     </header>
-      <main id="main-content" className="main-content" tabIndex={-1}><ConnectionBanner/><motion.div key={location.pathname} initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .22 }}><Outlet/></motion.div><footer className="page-footer"><span><CircleParking size={14}/> Parking OS</span><span>Menos vueltas. Más tiempo para ti.</span><span>{isDemo ? 'Experiencia de demostración' : 'Estacionamiento inteligente'}</span></footer></main>
+      <main id="main-content" className="main-content" tabIndex={-1}>{location.pathname !== '/seguridad' && <ConnectionBanner/>}<motion.div key={location.pathname} initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .22 }}><Outlet/></motion.div><footer className="page-footer"><span><CircleParking size={14}/> Parking OS</span><span>Menos vueltas. Más tiempo para ti.</span><span>{isDemo ? 'Experiencia de demostración' : 'Estacionamiento inteligente'}</span></footer></main>
     </div>
     <nav className="bottom-nav" aria-label="Navegación móvil">{navigation.map(({ to, label, Icon }) => <NavLink key={to} to={to} aria-label={label} end={to === '/'} className={({ isActive }) => `bottom-nav-link${isActive ? ' active' : ''}${to === '/pago' ? ' pay-nav-link' : ''}`}><Icon size={21}/><span>{label}</span></NavLink>)}</nav>
     <AnimatePresence>{notice && <motion.div className="toast" role="status" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}><Check size={18}/><span>{notice}</span><button onClick={() => setNotice('')} aria-label="Cerrar aviso"><X size={16}/></button></motion.div>}</AnimatePresence>
