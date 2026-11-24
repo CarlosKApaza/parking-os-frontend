@@ -956,3 +956,5 @@
   .parking-v2 .parking-v2-heading{min-height:0;flex:0 0 auto;margin:0 4px 9px;padding:0;align-items:baseline}
   .parking-v2 .parking-v2-heading .parking-v2-page-title{margin:0;line-height:1.13}
 }
+
+.parking-v2-slot.held-other{background:linear-gradient(145deg,#4a3d28,#302b24);border:1px solid #b49a62;color:#ffe4af}.parking-v2-slot.held-other .parking-v2-icon{background:none;color:#ffe4af}.parking-v2-slot.selecting{background:linear-gradient(145deg,#4c80ef,#3159b7);border-color:#90b2ff;color:#fff}.parking-v2-slot.reserved{background:linear-gradient(145deg,#17465c,#103040);border-color:#459cd0;color:#d7edff}.parking-v2-fields select{height:44px;background:#102b35;border-color:#426571;color:#e6f7f8;padding:8px 12px}.parking-v2-sheet .parking-v2-disabled a{color:#a1f5d5;text-decoration:underline}

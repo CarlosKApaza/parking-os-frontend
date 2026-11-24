@@ -1,12 +1,13 @@
-import { useRef, useState, type FormEvent, type TouchEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/auth-context'
-import { Check, Plus, X } from 'lucide-react'
+import { Check, Clock3, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { Modal } from '@/components/ui/dialog'
-import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
+import { type SpaceCode, statusLabels } from '@/lib/model'
 import { money, localDate, tomorrow } from '@/lib/utils'
-import { quoteParking } from '@/lib/pricing'
+import { interval,overlap,type Hold } from '@/services/reservations'
+import type { Vehiculo } from '@/services/auth'
 import { carDirection } from '@/lib/car-direction'
 
 const DEMO_RATE_BS=15 // Tarifa inicial de feria; lectura dinámica pendiente.
@@ -28,64 +29,64 @@ function SolidLock({ size = 27 }: { size?: number }) {
 
 
 export function SpacesPage() {
-  const { spaces, statusOf, stats, confirmed, isDemo, isLiveOccupancy, reservations, book, setNotice } = useParkingStore()
-  const {user}=useAuth()
+  const { spaces, statusOf, stats, confirmed, booking, setNotice } = useParkingStore()
+  const auth=useAuth(),{user}=auth
   const navigate=useNavigate()
-  const [selected, setSelected] = useState<SpaceCode | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [date, setDate] = useState(tomorrow)
-  const [from, setFrom] = useState('09:00')
-  const [to, setTo] = useState('11:00')
-  const [error, setError] = useState('')
-  const touch = useRef<{ start: number; delta: number } | null>(null)
-
-  const space = selected ? spaces.find(item => item.id === selected) : undefined
-  const status = space ? statusOf(space) : 'unknown'
-  const canReserve = !!(space && status === 'free' && confirmed && user)
-  const input = selected ? { space: selected, date, from, to } : null
-  const quote = quoteParking(date, from, to, DEMO_RATE_BS)
-  const validation = canReserve && input
-    ? validateBooking(input, spaces, reservations, new Date(), isLiveOccupancy)
-    : null
-
-  function closeSheet() {
-    setSelected(null)
-    setModalOpen(false)
-    setError('')
+  const [selected,setSelected]=useState<SpaceCode|null>(null)
+  const [modalOpen,setModalOpen]=useState(false)
+  const [date,setDate]=useState(tomorrow),[from,setFrom]=useState('09:00'),[to,setTo]=useState('11:00')
+  const [error,setError]=useState(''),[busy,setBusy]=useState(false),[hold,setHold]=useState<Hold|null>(null),[remaining,setRemaining]=useState(0)
+  const [vehicles,setVehicles]=useState<Vehiculo[]>([]),[vehicle,setVehicle]=useState('')
+  const currentHold=useRef<Hold|null>(null),alive=useRef(true),operation=useRef(0),releaseRef=useRef<(token:string)=>void>(()=>{})
+  const touch=useRef<{start:number;delta:number}|null>(null)
+  releaseRef.current=(token)=>{void auth.request('/reservas/retenciones/'+encodeURIComponent(token),{method:'DELETE'}).catch(()=>{}).finally(booking.reload)}
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;operation.current++;if(currentHold.current)releaseRef.current(currentHold.current.token)}},[])
+  useEffect(()=>{
+    if(!hold)return
+    const deadline=Date.parse(hold.venceEn),offset=Date.parse(hold.servidorAhora)-Date.now()
+    const tick=()=>{const left=Math.max(0,Math.ceil((deadline-Date.now()-offset)/1000));setRemaining(left);if(left===0){currentHold.current=null;setHold(null);setError('La selección venció. Vuelve a elegir la plaza.');booking.reload()}}
+    tick();const timer=window.setInterval(tick,250);return()=>window.clearInterval(timer)
+  },[hold])
+  const space=selected?spaces.find(s=>s.id===selected):undefined
+  const status=space?statusOf(space):'unknown'
+  const canReserve=!!(hold&&remaining>0&&space?.occupancy==='FREE'&&confirmed&&user&&booking.ready)
+  const dates=interval(date,from,to),minutes=(Date.parse(dates.fechaFin)-Date.parse(dates.fechaInicio))/60000
+  const total=Number.isFinite(minutes)&&minutes>0?minutes*DEMO_RATE_BS/60:0
+  const validation=Date.parse(dates.fechaInicio)<=Date.now()||!Number.isFinite(minutes)||minutes<=0?'Elige un horario futuro y válido.':booking.snapshot?.reservas.some(r=>r.plaza===selected&&overlap(dates.fechaInicio,dates.fechaFin,r.fechaInicio,r.fechaFin))?'La plaza ya está reservada en ese horario.':null
+  const publicHold=(code:SpaceCode)=>booking.snapshot?.retenciones.find(h=>h.plaza===code&&Date.parse(h.venceEn)>Date.now())
+  function closeSheet(){
+    if(busy)return
+    operation.current++
+    if(currentHold.current)releaseRef.current(currentHold.current.token)
+    currentHold.current=null;setHold(null);setSelected(null);setModalOpen(false);setError('')
   }
-
-  function chooseSpace(code: SpaceCode) {
-    const item = spaces.find(value => value.id === code)
-    if (!item) return
-    const actualStatus = statusOf(item)
-    const available = actualStatus === 'free' && confirmed
+  async function chooseSpace(code:SpaceCode){
+    if(busy)return
+    const item=spaces.find(s=>s.id===code)
+    if(!item)return
+    const available=item.occupancy==='FREE'&&confirmed&&booking.ready&&!publicHold(code)
     if(available&&!user){navigate('/login?next=%2Fespacios');return}
-
-    setSelected(code)
-    setModalOpen(true)
-    setError('')
-    setDate(tomorrow())
-    setFrom('09:00')
-    setTo('11:00')
+    setSelected(code);setModalOpen(true);setError('');setDate(tomorrow());setFrom('09:00');setTo('11:00');setVehicles([]);setVehicle('')
+    if(!available)return
+    const epoch=++operation.current;setBusy(true)
+    try{
+      const list=(await auth.request<Vehiculo[]>('/vehiculos')).filter(v=>v.activo&&v.estadoVerificacion==='VERIFICADO')
+      if(!alive.current||epoch!==operation.current)return
+      setVehicles(list);setVehicle(String(list[0]?.id??''))
+      if(!list.length){setError('Necesitas un vehículo verificado para reservar.');return}
+      const value=await auth.request<Hold>('/reservas/retenciones',{method:'POST',body:{plaza:code}})
+      if(!alive.current||epoch!==operation.current){releaseRef.current(value.token);return}
+      currentHold.current=value;setHold(value);setRemaining(Math.max(0,Math.ceil((Date.parse(value.venceEn)-Date.parse(value.servidorAhora))/1000)));booking.reload()
+    }catch(e){if(alive.current&&epoch===operation.current){setError(e instanceof Error?e.message:'No se pudo seleccionar.');booking.reload()}}finally{if(alive.current&&epoch===operation.current)setBusy(false)}
   }
-
-  function submitBooking(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!isDemo) {setError('El servicio de reservas todavía no está integrado.');return}
-    if (!canReserve || !input || validation || quote.hours < 1) {
-      setError(validation || 'Selecciona una plaza y un horario válidos.')
-      return
-    }
-    try {
-      if (isLiveOccupancy && !isDemo) {
-        setNotice('Reserva simulada para ' + input.space + '. Todavía no se registra en el backend.')
-      } else {
-        book(input)
-      }
-      closeSheet()
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo registrar la reserva de prueba.')
-    }
+  async function submitBooking(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();if(busy||!canReserve||!hold||!vehicle||validation)return
+    setBusy(true);setError('')
+    try{
+      const result=await auth.request<{codigo:string}>('/reservas',{method:'POST',body:{token:hold.token,vehiculoId:Number(vehicle),...dates}})
+      currentHold.current=null;setHold(null);setSelected(null);setModalOpen(false);booking.reload();setNotice('Reserva confirmada')
+      navigate('/reservas?detail='+encodeURIComponent(result.codigo))
+    }catch(e){setError(e instanceof Error?e.message:'No se pudo reservar.');booking.reload()}finally{setBusy(false)}
   }
 
   function onTouchStart(event: TouchEvent<HTMLDivElement>) {
@@ -108,13 +109,9 @@ export function SpacesPage() {
     if (distance > 85) closeSheet()
   }
 
-  const firstFree = confirmed ? spaces.find(entry => statusOf(entry) === 'free') : undefined
+  const firstFree = confirmed&&booking.ready ? spaces.find(entry => statusOf(entry) === 'free'&&!publicHold(entry.id))??spaces.find(entry=>entry.occupancy==='FREE'&&!publicHold(entry.id)) : undefined
 
-  const selectMessage = status === 'occupied' ? 'Plaza ocupada' :
-    status === 'reserved' ? 'Plaza reservada' :
-    status === 'unknown' || !confirmed ? 'Plaza bloqueada' :
-    ''
-
+  const selectMessage = error || (busy?'Consultando el servidor…':status==='occupied'?'Plaza ocupada':status==='unknown'||!confirmed?'Plaza bloqueada':!booking.ready?'Disponibilidad sin confirmar':selected&&publicHold(selected)&&!hold?'Otro cliente está seleccionando esta plaza':!hold?'Vuelve a seleccionar la plaza.':'')
   return <section className="parking-v2" aria-label="Estacionamientos de la maqueta">
     <div className="parking-v2-heading">
       <h1 className="parking-v2-page-title">Espacios</h1>
@@ -130,16 +127,16 @@ export function SpacesPage() {
           if (!id) return <div key="zona" className="parking-v2-hatch" style={{gridColumn: 3, gridRow: 4}} aria-hidden="true"><i/><i/><i/><i/></div>
           const item = spaces.find(entry => entry.id === id)!
           const itemStatus = statusOf(item)
-          const selecting = itemStatus === 'free' && selected === id
-          const locked = itemStatus === 'unknown' || itemStatus === 'reserved'
-          const displayed = selecting ? 'Seleccionado' :
-            locked ? itemStatus === 'reserved' ? 'Reservado' : 'Bloqueado' : statusLabels[itemStatus]
+          const selecting = item.occupancy==='FREE'&&hold?.plaza===id
+          const otherHold = item.occupancy==='FREE'&&!selecting&&!!publicHold(id)
+          const locked = itemStatus === 'unknown' || itemStatus === 'reserved'||otherHold
+          const displayed = selecting ? 'Seleccionado' : otherHold?'En selección':locked ? itemStatus === 'reserved' ? 'Reservado' : 'Bloqueado' : statusLabels[itemStatus]
           return <button
             type="button"
             key={id}
-            className={'parking-v2-slot ' + (selecting ? 'selecting' : itemStatus) + (selected === id ? ' active' : '')}
+            className={'parking-v2-slot ' + (selecting ? 'selecting' : otherHold?'held-other':itemStatus) + (selected === id ? ' active' : '')}
             style={{gridColumn: index % 2 ? 3 : 1, gridRow: Math.floor(index / 2) + 1}}
-            onClick={() => chooseSpace(id)}
+            onClick={() => void chooseSpace(id)} disabled={busy}
             aria-label={'Plaza ' + id + ', ' + displayed + (itemStatus === 'unknown' ? ', sin lectura confirmada' : '')}
           >
             <span className="parking-v2-code">{id}</span>
@@ -149,7 +146,7 @@ export function SpacesPage() {
                 locked ? <span className="parking-v2-lock-inline"><SolidLock size={27}/><span>{displayed}</span></span> :
                 <Plus size={26}/>}
             </span>
-            {!locked && itemStatus !== 'occupied' && <span className="parking-v2-status">{displayed}</span>}
+            {(selecting||!locked) && itemStatus !== 'occupied' && <span className="parking-v2-status">{displayed}</span>}
           </button>
         })}
       </div>
@@ -164,16 +161,16 @@ export function SpacesPage() {
       </button>
     </div>
     <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}
-      title={selected ? 'Plaza ' + selected : 'Plaza'} description={selectMessage || 'Consulta el horario. El registro de reservas todavía no está integrado.'}
+      title={selected ? 'Plaza ' + selected : 'Plaza'} description={canReserve?'Selecciona el horario de tu visita.':selectMessage}
       contentClassName="parking-v2-sheet"
       onContentTouchStart={onTouchStart} onContentTouchMove={onTouchMove} onContentTouchEnd={onTouchEnd}
     >
       {space && (canReserve ? <form className="parking-v2-form" onSubmit={submitBooking}>
         <div className="parking-v2-progress">
           <span><Check size={14}/>Seleccionado</span>
-          <span>Servicio de reservas pendiente</span>
+          <span><Clock3 size={14}/>{remaining} s para confirmar</span>
         </div>
-        <div className="parking-v2-fields">
+        <div className="parking-v2-fields"><label htmlFor="parking-v2-vehicle">Vehículo</label><select id="parking-v2-vehicle" value={vehicle} onChange={e=>setVehicle(e.target.value)}>{vehicles.map(v=><option value={v.id} key={v.id}>{v.placa}</option>)}</select>
           <label htmlFor="parking-v2-date">Fecha</label>
           <input id="parking-v2-date" type="date" min={localDate()} value={date} onChange={event => setDate(event.target.value)} required/>
           <div className="parking-v2-time-row">
@@ -185,16 +182,16 @@ export function SpacesPage() {
         {error && <p className="parking-v2-error" role="alert">{error}</p>}
         <div className="parking-v2-price">
           <div className="parking-v2-price-text">
-            <span>Estimación por hora · {quote.hours} h</span>
-            <strong>Bs {money(quote.total)}</strong>
+            <span>Estimación · {Number.isFinite(minutes)?Math.max(0,minutes):0} min</span>
+            <strong>Bs {money(total)}</strong>
             <small>Tarifa demo: Bs {money(DEMO_RATE_BS)}/h</small>
           </div>
-          <button type="submit" disabled={!isDemo || !!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
+          <button type="submit" disabled={busy||!!validation||!vehicle||!canReserve}>Reservar <Check size={17}/></button>
         </div>
       </form> : <div className="parking-v2-disabled">
         <div className="parking-v2-disabled-icon">{status === 'occupied' ? <img src="/parking-space-sedan-v2.webp" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(selected!)} alt="" draggable={false} /> : <SolidLock size={31}/>}</div>
-        <strong>{selectMessage}</strong>
-        <button type="button" onClick={closeSheet}>Entendido <X size={17}/></button>
+        <strong>{selectMessage}</strong>{error.includes('vehículo verificado')&&<Link to="/vehiculos">Mis vehículos</Link>}
+        <button type="button" disabled={busy} onClick={closeSheet}>Entendido <X size={17}/></button>
       </div>)}
     </Modal>
   </section>

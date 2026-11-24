@@ -12,6 +12,8 @@ export function useParking() {
   const [connection, setConnection] = useState<'connecting' | 'online' | 'offline'>('connecting')
   const [message, setMessage] = useState('Conectando con el estacionamiento…')
   const [retry, setRetry] = useState(0)
+  const [socketConnected,setSocketConnected]=useState(false)
+  const [reservationRevision,setReservationRevision]=useState(0)
 
   useEffect(() => {
     if (!isLiveOccupancy) return
@@ -87,6 +89,7 @@ export function useParking() {
     }
     function onConnect() {
       if (disposed) return
+      setSocketConnected(true);setReservationRevision(n=>n+1)
       ready = false
       pending.clear()
       setConnection('connecting')
@@ -95,6 +98,7 @@ export function useParking() {
     }
     function onDisconnect() {
       if (disposed) return
+      setSocketConnected(false);setReservationRevision(n=>n+1)
       ready = false
       pending.clear()
       setConnection('connecting')
@@ -107,6 +111,8 @@ export function useParking() {
       else void sync()
     }
 
+    const onReservation=()=>{if(!disposed)setReservationRevision(n=>n+1)}
+    socket.on('reservas.actualizadas',onReservation)
     socket.on(EVENT, onReading)
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
@@ -130,6 +136,7 @@ export function useParking() {
       window.clearInterval(fallback)
       window.clearInterval(freshness)
       controller?.abort()
+      socket.off('reservas.actualizadas',onReservation)
       socket.off(EVENT, onReading)
       socket.off('connect', onConnect)
       socket.off('disconnect', onDisconnect)
@@ -138,5 +145,5 @@ export function useParking() {
     }
   }, [retry])
 
-  return { spaces, connection, message, reconnect: () => setRetry(n => n + 1) }
+  return { spaces, connection, message, socketConnected, reservationRevision, reconnect: () => setRetry(n => n + 1) }
 }

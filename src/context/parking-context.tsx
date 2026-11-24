@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createDemo, demoSchema, displayStatus, payDemoTicket, reservationStatus, spaceCodes, validateBooking, type BookingInput, type DemoState, type Space } from '@/lib/model'
 import { isLiveOccupancy, unknownSpaces } from '@/services/parking'
+import { useAuth } from '@/context/auth-context'
+import { useReservations } from '@/hooks/use-reservations'
 import { useParking } from '@/hooks/use-parking'
 
 // El modo de cuentas no utiliza saldos, pagos ni reservas locales compartidos.
@@ -18,6 +20,8 @@ function useStore() {
   const [online, setOnline] = useState(navigator.onLine)
   const [now, setNow] = useState(new Date())
   const real = useParking()
+  const auth=useAuth()
+  const booking=useReservations(real.reservationRevision,real.socketConnected)
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 15000)
     const on = () => setOnline(true), off = () => setOnline(false)
@@ -41,10 +45,14 @@ function useStore() {
   }
   const confirmed = isLiveOccupancy ? online && real.connection === 'online' : !simulatedOffline
   const spaces: Space[] = !confirmed ? unknownSpaces() : isLiveOccupancy ? real.spaces : spaceCodes.map((id, i) => ({ id, occupancy: demo.occupancy[i], updatedAt: now.toISOString() }))
-  const reservations = isDemo ? demo.reservations.map(r => ({ ...r, status: reservationStatus(r, now) })) : []
-  const statusOf = (space: Space) => displayStatus(space, reservations, now)
+  const reservations = booking.reservations
+  const statusOf = (space: Space) => {
+    const physical=displayStatus(space,[],now)
+    if(physical!=='free')return physical
+    return booking.snapshot?.reservas.some(r=>r.plaza===space.id&&Date.parse(r.fechaFin)>Date.now())?'reserved':physical
+  }
   const stats = { free: 0, occupied: 0, reserved: 0, unknown: 0 }
-  spaces.forEach(s => stats[statusOf(s)]++)
+  spaces.forEach(s => {const status=statusOf(s);stats[status==='free'&&booking.snapshot?.retenciones.some(h=>h.plaza===s.id&&Date.parse(h.venceEn)>Date.now())?'reserved':status]++})
   function book(input: BookingInput) {
     const error = validateBooking(input, spaces, current.current.reservations, new Date(), isDemo && isLiveOccupancy)
     if (error) throw new Error(error)
@@ -53,12 +61,12 @@ function useStore() {
     setNotice(`Reserva de prueba ${id} creada`)
     return id
   }
-  return { demo, update, now, isDemo, isLiveOccupancy, spaces, reservations, statusOf, stats, confirmed, online, notice, setNotice,
+  return { booking, demo, update, now, isDemo, isLiveOccupancy, spaces, reservations, statusOf, stats, confirmed, online, notice, setNotice,
     connectionMessage: isLiveOccupancy ? real.message : simulatedOffline ? 'Simulación sin señal. Las plazas no están confirmadas.' : 'Datos de demostración',
     reconnect: isLiveOccupancy ? real.reconnect : () => setSimulatedOffline(false),
     simulatedOffline, setSimulatedOffline, book,
     resetDemo: () => { update(() => createDemo()); setSimulatedOffline(false); setNotice('La demostración vuelve a empezar') },
-    cancel: (id: string) => { update(s => ({ ...s, reservations: s.reservations.map(r => r.id === id ? { ...r, status: 'cancelled' } : r) })); setNotice('Reserva cancelada') },
+    cancel: async (id: string) => { await auth.request('/reservas/'+encodeURIComponent(id),{method:'DELETE'});booking.reload();setNotice('Reserva cancelada') },
     topUp: (amount: number, unit: 'Bs' | 'tokens') => {
       if (!Number.isFinite(amount) || amount <= 0 || amount > 1000) throw new Error('Elige un importe entre 1 y 1.000.')
       update(s => ({ ...s, balance: s.balance + (unit === 'Bs' ? amount : 0), tokens: s.tokens + (unit === 'tokens' ? amount : 0), movements: [{ id: crypto.randomUUID(), title: unit === 'Bs' ? 'Recarga de demostración' : 'Tokens de demostración', amount, unit, date: new Date().toISOString() }, ...s.movements] }))
