@@ -34,3 +34,9 @@
 .app-shell:has(.auth-splash) .sidebar,.app-shell:has(.auth-splash) .topbar,.app-shell:has(.auth-splash) .bottom-nav,.app-shell:has(.auth-splash) .page-footer{visibility:hidden}
 
 .auth-restore{text-align:center}.auth-restore>p[role=status]{color:#b6cbd2;font-size:14px}.auth-restore>.auth-text-link{background:transparent}
+
+/* Registro de matrícula: ayuda de formato y futuro reconocimiento OCR. */
+.vehicle-plate-help{font-size:12px;line-height:1.45;color:#a8c7ce;margin:6px 0 10px}
+.vehicle-ocr-note{display:flex;align-items:flex-start;gap:10px;padding:12px;margin-top:16px;border:1px solid #3e8276;border-radius:12px;background:#103e3b;color:#a1f5d5}
+.vehicle-ocr-note>svg{flex-shrink:0;margin-top:2px}.vehicle-ocr-note strong{font-size:13px;font-weight:750}.vehicle-ocr-note p{font-size:12px;color:#c2dcd8;line-height:1.5;margin-top:4px}
+.vehicle-enable-demo{display:block;color:#a1f5d5;background:#164b43;border:1px solid #4b9e89;border-radius:8px;font-size:12px;padding:6px 10px;margin-top:8px;font-weight:700}.vehicle-enable-demo:disabled{opacity:.55}
