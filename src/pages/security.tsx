@@ -107,7 +107,7 @@ export function SecurityPage() {
 
   useEffect(() => {
     let cancelled = false
-    let refreshTimer: ReturnType<typeof setTimeout> | undefined
+    let refreshTimer: number | undefined
     let activeController: AbortController | undefined
     const recentObjectUrls: string[] = []
     let frameIndex = 0
