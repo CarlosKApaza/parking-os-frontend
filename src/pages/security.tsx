@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Camera, Maximize2, RefreshCw, VideoOff, WifiOff } from 'lucide-react'
-import { cameraSources } from '@/services/camera'
+import { cameraSources, type CameraSource } from '@/services/camera'
 
 type CameraStatus = 'checking' | 'online' | 'offline' | 'unsupported'
 
@@ -10,6 +10,86 @@ type CameraStatus = 'checking' | 'online' | 'offline' | 'unsupported'
  * Esto evita el visor negro de algunos navegadores que no decodifican el stream MJPEG.
  * Una UVC es compartida por PC + telefonos: jamas abrimos VideoCapture desde el navegador.
  */
+
+function CameraPreview({ source, selected, onChoose }: { source: CameraSource; selected: boolean; onChoose: () => void }) {
+  const [status, setStatus] = useState<CameraStatus>('checking')
+  const [picture, setPicture] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    let timer: number | undefined
+    let controller: AbortController | undefined
+    const urls: string[] = []
+    if (!source.baseUrl) { setStatus('unsupported'); return }
+    const base = source.baseUrl
+    setStatus('checking')
+
+    async function probe() {
+      const request = new AbortController()
+      controller = request
+      const timeout = window.setTimeout(() => request.abort(), 3500)
+      try {
+        const response = await fetch(base + '/snapshot.jpg?t=' + Date.now(), {
+          cache: 'no-store', headers: { Accept: 'image/jpeg' }, signal: request.signal,
+        })
+        if (!response.ok) throw new Error('HTTP ' + response.status)
+        const blob = await response.blob()
+        if (!blob.type.startsWith('image/jpeg') || blob.size < 100) throw new Error('JPEG inválido')
+        const url = URL.createObjectURL(blob)
+        const image = new Image()
+        const decoded = await new Promise<boolean>(resolve => {
+          image.onload = () => resolve(true)
+          image.onerror = () => resolve(false)
+          image.src = url
+        })
+        if (!decoded || cancelled) {
+          URL.revokeObjectURL(url)
+          if (!cancelled) throw new Error('JPEG no decodificable')
+          return
+        }
+        urls.push(url)
+        setPicture(url)
+        setStatus('online')
+        if (urls.length > 3) {
+          const old = urls.shift()
+          if (old) URL.revokeObjectURL(old)
+        }
+      } catch {
+        if (!cancelled) { setPicture(null); setStatus('offline') }
+      } finally {
+        window.clearTimeout(timeout)
+        if (controller === request) controller = undefined
+        if (!cancelled) timer = window.setTimeout(probe, 3000)
+      }
+    }
+    void probe()
+    return () => {
+      cancelled = true
+      if (timer) window.clearTimeout(timer)
+      controller?.abort()
+      urls.forEach(url => URL.revokeObjectURL(url))
+    }
+  }, [source.baseUrl])
+
+  const online = status === 'online' && picture !== null
+  return <button type="button"
+    className={'security-live-choice' + (selected ? ' is-selected' : '')}
+    aria-pressed={selected}
+    aria-label={source.name + ', ' + (online ? 'en vivo' : 'sin conexión')}
+    onClick={onChoose}
+  >
+    <span className="security-live-thumb">
+      {online ? <img src={picture} alt="" draggable={false}/> :
+        <span className="security-live-thumb-offline"><VideoOff size={27}/></span>}
+    </span>
+    <span className="security-live-choice-caption">
+      <span><strong>{source.name}</strong><i className={online ? 'is-online' : ''}/></span>
+      <small>{source.zone}</small>
+      <em>{online ? 'En vivo' : status === 'checking' ? 'Conectando…' : 'Sin conexión'}</em>
+    </span>
+  </button>
+}
+
 export function SecurityPage() {
   const sources = useMemo(() => cameraSources(), [])
   const [cameraId, setCameraId] = useState(sources[0].id)
@@ -134,13 +214,7 @@ export function SecurityPage() {
       </span>
     </div>
 
-    {sources.length > 1 && <div className="security-live-tabs" role="group" aria-label="Seleccionar cámara">
-      {sources.map(source => <button key={source.id} type="button"
-        className={source.id === current.id ? 'is-active' : ''}
-        aria-pressed={source.id === current.id} onClick={() => setCameraId(source.id)}>
-        {source.name}
-      </button>)}
-    </div>}
+
 
     <div className="security-live-card">
       <div className="security-live-meta">
@@ -184,6 +258,18 @@ export function SecurityPage() {
       </div>
     </div>
     {fullscreenError && <p className="security-live-message" role="status">{fullscreenError}</p>}
+    <div className="security-live-choices-heading">
+      <h2>Tus cámaras</h2><span>Selecciona una vista</span>
+    </div>
+    <div className="security-live-choices" role="group" aria-label="Cámaras disponibles">
+      {sources.map(source => <CameraPreview
+        key={source.id}
+        source={source}
+        selected={source.id === current.id}
+        onChoose={() => { setCameraId(source.id); setFluidMode(true) }}
+      />)}
+    </div>
+
     <p className="security-live-note">Prototipo en Wi-Fi local · Sin grabación ni reconocimiento facial</p>
   </section>
 }
