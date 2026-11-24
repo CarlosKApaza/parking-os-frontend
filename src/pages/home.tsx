@@ -43,10 +43,9 @@ export function HomePage() {
         <span className="home-hero-bracket corner-four"/>
       </div>
       <img
-        src="/parking-home-sedan-v2.webp"
         className="home-hero-car"
-        alt=""
-        aria-hidden="true"
+        src="/parking-space-sedan-v2.webp"
+        alt="Auto en estacionamiento"
         draggable={false}
         loading="eager"
         decoding="async"
