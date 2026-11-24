@@ -712,3 +712,237 @@
   .workspace:has(.parking-v2) .topbar-spaces-place{font-size:10px}
   .workspace:has(.parking-v2) .topbar-spaces-free strong{font-size:19px}
 }
+
+
+/* Parking OS · Espacios Premium v6
+ * Unifica el diseño de espacios con Inicio sin tocar la lógica de sensores.
+ * Se mantiene el mapa real, las reservas y el sentido hacia el pasillo. */
+.workspace:has(.parking-v2){
+  background:
+    radial-gradient(ellipse 80% 43% at 91% 12%,rgba(1,153,140,.25),transparent 74%),
+    radial-gradient(ellipse 67% 47% at 3% 1%,rgba(11,93,119,.25),transparent 76%),
+    linear-gradient(157deg,#07151e,#071b22 59%,#061d21);
+}
+.parking-v2-page-title{
+  margin:3px 0 8px;
+  font-weight:830;
+  font-size:clamp(27px,3vw,40px);
+  letter-spacing:-.055em;
+  line-height:1.12;
+  color:#f9fcfb;
+}
+.parking-v2-heading{margin-bottom:15px}
+.parking-v2-location{color:#d8e6e8}
+.parking-v2-location svg{color:#d7efeb}
+.parking-v2-availability strong{color:#a2ffd7}
+.parking-v2-map{background:transparent;border-color:transparent}
+.parking-v2-lane>svg:first-child path{stroke:#62c9b9;stroke-width:2;opacity:.92}
+.parking-v2-slot{
+  border-radius:21px;
+  overflow:hidden;
+  box-shadow:inset 0 1px 0 #ffffff0a;
+}
+.parking-v2-slot.free{
+  background:linear-gradient(140deg,#e6fff7,#b9f7dd);
+  border-color:#c0ffe2;
+  color:#0c2b2a;
+  box-shadow:0 8px 16px #001b1b14;
+}
+.parking-v2-slot.free .parking-v2-icon{
+  background:linear-gradient(150deg,#578fff,#3269ed);
+  box-shadow:0 3px 9px #326bf42d;
+}
+.parking-v2-slot.occupied{
+  background:linear-gradient(130deg,#093743,#063b3d 65%,#05303d);
+  border-color:#27c1be;
+  box-shadow:inset 0 0 20px #16c3b216;
+}
+.parking-v2-slot.unknown,.parking-v2-slot.reserved{
+  background:linear-gradient(140deg,#123444,#0a2935 65%,#0a2733);
+  border:1px solid #5f9eaf;
+  color:#ecf7f8;
+}
+.parking-v2-slot .parking-v2-code{
+  color:inherit;
+  font-size:17px;
+  text-shadow:0 1px 6px #00000014;
+}
+.parking-v2-lock-inline{
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  white-space:normal;
+}
+.parking-v2-lock-inline svg{color:#f7ffff;width:27px;height:27px;filter:drop-shadow(0 1px 3px #0006)}
+.parking-v2-lock-inline>span{color:#f1f8f9;font-size:12px;font-weight:720}
+.parking-v2-hatch i{background:#55b7ac;box-shadow:0 0 11px #5fe7c01c}
+.parking-v2-booking-bar{
+  background:linear-gradient(110deg,#b4ffe3,#6af3c0);
+  box-shadow:0 -5px 20px #00281a2c;
+}
+.parking-v2-booking-bar button{
+  background:#fff;
+  box-shadow:0 6px 16px #0379533a;
+}
+.parking-v2-sheet.dialog-content{
+  background:linear-gradient(155deg,#1d303b,#16252e);
+  border-color:#426272;
+}
+.parking-v2-disabled-icon:has(.parking-v2-car-image){
+  width:min(100%,360px);
+  height:160px;
+}
+.parking-v2-disabled-icon .parking-v2-car-image{
+  object-fit:contain;
+  image-rendering:auto;
+  filter:drop-shadow(0 6px 12px #0008);
+}
+@media(max-width:760px){
+  /* Cabecera: logotipo y accesos, después título y contador dentro del mapa. */
+  .workspace:has(.parking-v2) > .topbar.topbar-spaces{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    height:73px;
+    min-height:73px;
+    padding:13px 17px 7px;
+    border:0;
+    background:transparent;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-summary{display:none!important}
+  .workspace:has(.parking-v2) .mobile-brand{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+  }
+  .workspace:has(.parking-v2) .mobile-brand b{
+    font-size:21px;
+    letter-spacing:-.9px;
+  }
+  .workspace:has(.parking-v2) .topbar-actions{
+    display:flex;
+    margin-left:auto;
+    width:auto;
+    min-width:0;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  .workspace:has(.parking-v2) .topbar-actions .location-label,
+  .workspace:has(.parking-v2) .topbar-actions .mode-pill{display:none}
+  .workspace:has(.parking-v2) .header-quick-actions{gap:8px}
+  .workspace:has(.parking-v2) .main-content{
+    padding:0 12px;
+  }
+  .parking-v2{gap:0}
+  .parking-v2-page-title{
+    display:block;
+    flex:0 0 auto;
+    margin:0 4px 7px;
+    font-size:clamp(27px,7.6vw,33px);
+    letter-spacing:-.05em;
+    line-height:1.13;
+  }
+  .parking-v2-heading{
+    display:flex;
+    flex:0 0 auto;
+    align-items:center;
+    justify-content:space-between;
+    min-height:29px;
+    margin:0 4px 11px;
+    gap:7px;
+  }
+  .parking-v2-location{
+    display:flex;
+    min-width:0;
+    align-items:center;
+    gap:4px;
+    font-size:11px;
+    font-weight:680;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .parking-v2-location svg{width:15px;height:15px}
+  .parking-v2-availability{
+    flex-shrink:0;
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+    font-size:12px;
+    white-space:nowrap;
+    color:#e2f0f1;
+  }
+  .parking-v2-availability strong{font-size:23px}
+  .parking-v2-map{
+    flex:1 1 auto;
+    min-height:0;
+    padding:0 0 8px;
+    margin:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    overflow:hidden;
+  }
+  .parking-v2-grid{
+    grid-template-columns:minmax(0,1fr) min(12vw,53px) minmax(0,1fr);
+    grid-template-rows:repeat(4,minmax(0,1fr));
+    gap:8px 8px;
+  }
+  .parking-v2-slot{border-radius:17px}
+  .parking-v2-slot .parking-v2-code{font-size:16px;left:12px;top:10px}
+  .parking-v2-slot.free .parking-v2-icon{
+    width:43px;height:43px;min-height:43px;
+    border-radius:13px;
+  }
+  .parking-v2-status{font-size:12px}
+  .parking-v2-slot.occupied .parking-v2-icon{
+    position:absolute;inset:0;display:grid;place-items:center;
+    width:100%;height:100%;margin:0;padding:0;
+  }
+  .parking-v2-slot.occupied .parking-v2-car-image{
+    display:block;
+    width:calc(100% - 6px);
+    height:calc(100% - 8px);
+    max-height:none;
+    object-fit:contain;
+    object-position:center;
+    filter:drop-shadow(0 5px 8px #0008);
+  }
+  .parking-v2-slot.occupied .parking-v2-code{
+    z-index:3;
+    color:#f9ffff;
+    text-shadow:0 1px 5px #002b3f;
+  }
+  .parking-v2-lock-inline{gap:5px}
+  .parking-v2-lock-inline svg{width:25px;height:25px}
+  .parking-v2-lock-inline>span{font-size:11px}
+  .parking-v2-hatch i{
+    width:9px;
+    height:43px;
+    background:#4ec9b9;
+  }
+  .parking-v2-booking-bar{
+    min-height:83px;
+    padding:13px 18px;
+    background:linear-gradient(110deg,#b4ffe3,#65efbf);
+  }
+  .parking-v2-booking-price strong{font-size:27px}
+  .parking-v2-booking-bar button{
+    min-height:44px;
+    font-size:12px;
+    padding:11px 15px;
+  }
+}
+@media(max-width:385px){
+  .workspace:has(.parking-v2) > .topbar.topbar-spaces{padding-inline:12px}
+  .workspace:has(.parking-v2) .main-content{padding-inline:9px}
+  .parking-v2-location{font-size:10px;gap:3px}
+  .parking-v2-location svg{width:13px;height:13px}
+  .parking-v2-availability strong{font-size:20px}
+  .parking-v2-grid{grid-template-columns:minmax(0,1fr) 35px minmax(0,1fr);gap:6px}
+  .parking-v2-lock-inline svg{width:21px;height:21px}
+  .parking-v2-lock-inline>span{font-size:10px}
+}
