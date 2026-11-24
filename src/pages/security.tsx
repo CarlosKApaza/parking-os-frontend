@@ -25,6 +25,7 @@ function CameraPreview({ source, selected, onChoose }: { source: CameraSource; s
     setStatus('checking')
 
     async function probe() {
+      let nextDelay = 3000
       const request = new AbortController()
       controller = request
       const timeout = window.setTimeout(() => request.abort(), 3500)
@@ -55,11 +56,12 @@ function CameraPreview({ source, selected, onChoose }: { source: CameraSource; s
           if (old) URL.revokeObjectURL(old)
         }
       } catch {
+        nextDelay = 8000 // Webcam ausente: no saturar consola/red con reintentos.
         if (!cancelled) { setPicture(null); setStatus('offline') }
       } finally {
         window.clearTimeout(timeout)
         if (controller === request) controller = undefined
-        if (!cancelled) timer = window.setTimeout(probe, 3000)
+        if (!cancelled) timer = window.setTimeout(probe, nextDelay)
       }
     }
     void probe()
