@@ -8,53 +8,85 @@ export function WalletCard({ full = false }: { full?: boolean }) {
   return <section className={`wallet-card ${full ? 'wallet-full' : ''}`} aria-label="Mi billetera"><div className="wallet-heading"><span><Wallet size={18}/>MI BILLETERA</span><span className="wallet-mark">P<span>•</span></span></div><div className="wallet-main"><div><p>Saldo disponible{isDemo ? ' · demo' : ''}</p><div className="balance"><span>Bs</span>{isDemo ? money(demo.balance) : '—'}</div></div><div className="wallet-benefits"><span><Coins size={15}/><b>{isDemo ? demo.tokens : '—'}</b> tokens</span><span><Crown size={15}/>{isDemo && demo.plus ? 'Plus activo' : 'Plan estándar'}</span></div></div><div className="wallet-actions"><Link to="/billetera?tab=saldo"><Plus size={17}/>Recargar</Link><Link to="/billetera?tab=tokens"><Coins size={17}/>Tokens</Link><Link to="/billetera?tab=planes"><Crown size={17}/>Planes<ArrowUpRight size={13}/></Link></div>{!full && <Link className="wallet-history" to="/billetera?tab=movimientos">Ver mis movimientos<ArrowRight size={15}/></Link>}</section>
 }
 
+
 export function HomePage() {
   const { stats, spaces, confirmed, isLiveOccupancy } = useParkingStore()
   const total = spaces.length
-  const stale = isLiveOccupancy && spaces.some(space => space.isStale)
-  const count = confirmed ? String(stats.free).padStart(2, '0') : '—'
+  const staleCount = isLiveOccupancy
+    ? spaces.filter(space => space.isStale && space.occupancy !== 'UNKNOWN').length
+    : 0
+  const availableText = confirmed ? String(stats.free).padStart(2, '0') : '—'
   const counters = [
-    { label: 'Ocupados', value: stats.occupied, Icon: CarFront },
-    { label: 'Sin confirmar', value: stats.unknown, Icon: LockKeyhole },
-    { label: 'Reservados', value: stats.reserved, Icon: CalendarDays },
-  ]
-  const cards = [
-    { title: 'Ver espacios', description: 'Explora los espacios disponibles.', path: '/espacios', Icon: ParkingSquare },
-    { title: 'Ver cámaras', description: 'Monitorea accesos en tiempo real.', path: '/seguridad', Icon: Camera },
-    { title: 'Pagar salida', description: 'Consulta el pago de tu salida (demo).', path: '/pago', Icon: ScanLine },
+    { label: 'Ocupados', value: stats.occupied, Icon: CarFront, color: 'occupied' },
+    { label: 'Sin confirmar', value: stats.unknown, Icon: LockKeyhole, color: 'unknown' },
+    { label: 'Reservados', value: stats.reserved, Icon: CalendarDays, color: 'reserved' },
   ]
 
-  return <div className="home-overview home-b">
-    <section className="home-b-hero" aria-label="Disponibilidad del estacionamiento">
-      <div className="home-b-hero-title"><ParkingSquare size={19}/><span>Estacionamiento principal</span></div>
-      <div className="home-b-hero-count" aria-live="polite">
-        <div><strong>{count}</strong><span>/ {String(total).padStart(2, '0')}</span></div>
+  return <div className="home-overview home-landing">
+    <section className="home-intro" aria-labelledby="home-heading">
+      <span className="home-intro-eyebrow">ESTACIONAMIENTO PRINCIPAL</span>
+      <h1 id="home-heading">Tu espacio,<span>sin dar vueltas.</span></h1>
+      <p>Consulta, reserva y controla tu estacionamiento en tiempo real.</p>
+    </section>
+
+    <section className="home-landing-hero" aria-label="Plazas disponibles ahora">
+      <div className="home-hero-light" aria-hidden="true"/>
+      <div className="home-landing-count" aria-live="polite">
+        <div><strong>{availableText}</strong><span>/ {String(total).padStart(2, '0')}</span></div>
         <p>Plazas libres</p>
       </div>
-      <div className="home-b-lanes" aria-hidden="true"><span/><span/></div>
-      <img className="home-b-car" src="/parking-car-realistic.webp" alt="" aria-hidden="true" draggable={false}/>
-      {(!confirmed || stale) && <span className="home-b-reading">
-        {!confirmed ? <WifiOff size={12}/> : <RadioTower size={12}/>}
-        {!confirmed ? 'Lecturas sin conexión' : 'Hay lecturas antiguas'}
+      <div className="home-hero-parking" aria-hidden="true">
+        <span className="home-hero-lane home-hero-lane-first"/>
+        <span className="home-hero-lane home-hero-lane-last"/>
+        <span className="home-hero-bracket corner-one"/>
+        <span className="home-hero-bracket corner-two"/>
+        <span className="home-hero-bracket corner-three"/>
+        <span className="home-hero-bracket corner-four"/>
+      </div>
+      <img
+        src="/parking-home-hd.svg"
+        className="home-hero-car"
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+      />
+      {(!confirmed || staleCount > 0) && <span className="home-hero-signal">
+        {confirmed ? <RadioTower size={12}/> : <WifiOff size={12}/>}
+        {confirmed ? `${staleCount} lectura${staleCount === 1 ? '' : 's'} antigua${staleCount === 1 ? '' : 's'}` : 'Datos sin conexión'}
       </span>}
     </section>
 
-    <section className="home-b-counters" aria-label="Resumen de estacionamientos">
-      {counters.map(({ label, value, Icon }) =>
-        <article className="home-b-counter" key={label}>
-          <span><Icon size={16}/>{label}</span>
+    <section className="home-landing-stats" aria-label="Resumen del estacionamiento">
+      {counters.map(({ label, value, Icon, color }) =>
+        <article key={label} className={'home-landing-stat ' + color}>
+          <span className="home-landing-stat-icon"><Icon size={18}/></span>
+          <span className="home-landing-stat-label">{label}</span>
           <strong>{confirmed ? String(value).padStart(2, '0') : '—'}</strong>
         </article>)}
     </section>
 
-    <nav className="home-b-links" aria-label="Accesos rápidos">
-      {cards.map(({ title, description, path, Icon }, index) =>
-        <Link className={'home-b-link' + (index === 0 ? ' primary' : '')}
-          key={path} to={path}>
-          <span className="home-b-link-icon"><Icon size={25} strokeWidth={2.1}/></span>
-          <span className="home-b-link-text"><strong>{title}</strong><small>{description}</small></span>
-          <ArrowRight className="home-b-link-arrow" size={20} aria-hidden="true"/>
-        </Link>)}
+    <nav className="home-landing-actions" aria-label="Acciones rápidas de Parking OS">
+      <Link to="/espacios" className="home-landing-primary">
+        <span className="home-landing-primary-icon"><ParkingSquare size={29} strokeWidth={2}/></span>
+        <span className="home-landing-action-copy">
+          <strong>Ver espacios</strong><small>Explora y reserva una plaza.</small>
+        </span>
+        <ArrowRight size={23} className="home-landing-arrow"/>
+      </Link>
+      <div className="home-landing-action-grid">
+        <Link to="/seguridad" className="home-landing-secondary security-action">
+          <span className="home-landing-secondary-icon"><Camera size={27}/></span>
+          <strong>Ver cámaras</strong>
+          <small>Monitorea en vivo.</small>
+          <ArrowRight className="home-landing-arrow" size={19}/>
+        </Link>
+        <Link to="/pago" className="home-landing-secondary payment-action">
+          <span className="home-landing-secondary-icon"><ScanLine size={27}/></span>
+          <strong>Pagar salida</strong>
+          <small>Consulta tu pago por tiempo (demo).</small>
+          <ArrowRight className="home-landing-arrow" size={19}/>
+        </Link>
+      </div>
     </nav>
   </div>
 }
