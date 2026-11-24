@@ -2,10 +2,10 @@
 
 ## Que funciona en esta version
 
-- Una sola `UVC Camera` (indice `1` en la PC de pruebas) transmite video en vivo hacia el modulo **Seguridad**.
+- Dos posiciones de cámara en el módulo Seguridad: **Cámara 01 UVC (entrada)** y **Cámara 02 W77 (salida)**. La segunda permanece **Sin conexión** mientras no exista el dispositivo o su servidor.
 - El lector local Python publica un stream MJPEG que sirve a varios clientes a la vez, sin abrir la camara varias veces.
 - Todos los navegadores de la **misma red local** pueden acceder a la vista (demo sin login de camaras).
-- No hay segunda camara ficticia, ni bloqueo por suscripcion premium durante la demo.
+- No hay imagen ficticia en ninguna de las cámaras: solo se muestra una miniatura cuando el servidor entrega un JPEG decodificable.
 - Sin grabacion, sin deteccion de placas y sin cobros desde el modulo Seguridad. El backend NestJS permanece independiente en esta etapa.
 
 ## Arquitectura
@@ -70,19 +70,26 @@ Reiniciar Vite tras editar ese archivo.
 
 ## Extender a dos camaras
 
-Cuando se conecte una segunda UVC real, descubrir su indice en Windows y arrancar otro proceso (con puerto diferente):
+Cuando se conecte la webcam W77 (si Windows/OpenCV la reconoce), descubrir su índice real. No asumir que será el 2. Detener temporalmente el primer servidor durante el listado de índices:
 
 ```powershell
-py camara_seguridad.py --camera 2 --port 8766
+py camara_usb.py --list --max 6
+py camara_usb.py --camera 2
 ```
 
-En `.env.local`, agregar:
+Luego cerrar la prueba con Q, reiniciar Cámara 01 en la terminal 1, y arrancar la W77 en una **segunda terminal** con su índice verdadero (2 solo es un ejemplo):
+
+```powershell
+py -u .\camaraSeguridadCompleta.py --camera 2 --backend auto --port 8766 --fps 15 --quality 70
+```
+
+La PWA busca automáticamente Cámara 02 en el **mismo host** de la página, puerto `8766`. Puedes verificar `http://127.0.0.1:8766/health` y `http://127.0.0.1:8766/snapshot.jpg`. Si la W77 está conectada en **otra PC**, definir en `frontend_clientePWA/.env.local`:
 
 ```env
-VITE_CAMERA_SALIDA_URL=http://192.168.1.14:8766
+VITE_CAMERA_SALIDA_URL=http://IP_DE_LA_PC_CON_W77:8766
 ```
 
-Al configurarla aparecera una pestaña para cambiar entre Camara 01 y Camara 02. Si no se configura, **no se inventa una segunda camara**.
+Reiniciar Vite después de cambiar `.env.local`. Ambas computadoras y el celular deben estar en la misma red privada. En Seguridad, las **dos tarjetas aparecen siempre**; la W77 desconectada no interrumpe la UVC. Pulsar cada miniatura cambia el visor grande. Solo la vista principal abre el streaming MJPEG continuo; las miniaturas hacen comprobaciones JPEG espaciadas.
 
 ## Futura integracion de reconocimiento de placas (IA)
 
@@ -113,3 +120,13 @@ La cantidad de FPS que se consigue realmente depende también del hardware UVC,
 del controlador de Windows, de la resolución y de cuántos clientes estén viendo la transmisión.
 En redes con muchos clientes conviene usar WebRTC o un servidor multimedia dedicado.
 
+
+## Inicio (23/11/2026)
+
+Inicio ahora muestra el resumen de disponibilidad P1-P7 proveniente de los sensores cuando esta activo el modo live, tres accesos directos (Espacios, Seguridad, Pagar), la tarifa ilustrativa de Bs 5/h y una reserva de prueba si existe. **No muestra importes reales, placas ni visitas inventadas.** El panel de estadia y cobro verdadero solo se incorporara al conectar backend de visitas + pagos.
+
+## Precauciones para la W77
+
+La etiqueta `1080P / 5V / lente 3.6 mm` no garantiza que Windows la enumere como webcam UVC. Antes de conectarla a Python, comprobar su conector y que Windows la detecta. Si usa USB estándar suele alimentarse por el mismo cable; **no inyectar 5V a los pines de señal del ESP32**. Si exige hardware de captura o controlador particular, resolverlo en Windows primero.
+
+El puerto del video del prototipo carece de autenticacion. No exponer al Internet ni utilizarlo para vigilancia real sin controles de acceso y HTTPS.
