@@ -946,3 +946,13 @@
   .parking-v2-lock-inline svg{width:21px;height:21px}
   .parking-v2-lock-inline>span{font-size:10px}
 }
+
+/* Cabecera compacta: título y disponibilidad en una sola fila.
+   El mapa gana altura; la barra de tarifa conserva su anclaje y dimensiones. */
+.parking-v2 .parking-v2-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.parking-v2 .parking-v2-heading .parking-v2-page-title{margin:0}
+.parking-v2 .parking-v2-availability{flex:none}
+@media(max-width:760px){
+  .parking-v2 .parking-v2-heading{min-height:0;flex:0 0 auto;margin:0 4px 9px;padding:0;align-items:baseline}
+  .parking-v2 .parking-v2-heading .parking-v2-page-title{margin:0;line-height:1.13}
+}

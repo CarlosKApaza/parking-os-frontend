@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
-import { Check, Clock3, MapPin, Plus, X } from 'lucide-react'
+import { Check, Clock3, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
@@ -135,10 +135,9 @@ export function SpacesPage() {
     !myHold ? (selected && ownerOf(selected) === 'other' ? 'Otro usuario está seleccionando esta plaza' : 'Vuelve a tocar la plaza para seleccionarla') : ''
 
   return <section className="parking-v2" aria-label="Estacionamientos de la maqueta">
-    <h1 className="parking-v2-page-title">Espacios</h1>
     <div className="parking-v2-heading">
-      <div className="parking-v2-location"><MapPin size={17}/><span>Maqueta física</span><span className="parking-v2-separator">·</span><span>Planta única</span></div>
-      <div className="parking-v2-availability"><strong>{String(stats.free).padStart(2, '0')}</strong><span>libres</span></div>
+      <h1 className="parking-v2-page-title">Espacios</h1>
+      <div className="parking-v2-availability" aria-live="polite"><strong>{String(stats.free).padStart(2, '0')}</strong><span>libres</span></div>
     </div>
 
     <div className="parking-v2-map">
