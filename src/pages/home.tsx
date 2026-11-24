@@ -24,7 +24,6 @@ export function HomePage() {
 
   return <div className="home-overview home-landing">
     <section className="home-intro" aria-labelledby="home-heading">
-      <span className="home-intro-eyebrow">ESTACIONAMIENTO PRINCIPAL</span>
       <h1 id="home-heading">Tu espacio,<span>sin dar vueltas.</span></h1>
       <p>Consulta, reserva y controla tu estacionamiento en tiempo real.</p>
     </section>
@@ -44,11 +43,13 @@ export function HomePage() {
         <span className="home-hero-bracket corner-four"/>
       </div>
       <img
-        src="/parking-home-hd.svg"
+        src="/parking-home-sedan-v2.webp"
         className="home-hero-car"
         alt=""
         aria-hidden="true"
         draggable={false}
+        loading="eager"
+        decoding="async"
       />
       {(!confirmed || staleCount > 0) && <span className="home-hero-signal">
         {confirmed ? <RadioTower size={12}/> : <WifiOff size={12}/>}
@@ -83,7 +84,7 @@ export function HomePage() {
         <Link to="/pago" className="home-landing-secondary payment-action">
           <span className="home-landing-secondary-icon"><ScanLine size={27}/></span>
           <strong>Pagar salida</strong>
-          <small>Consulta tu pago por tiempo (demo).</small>
+          <small>Pago por tiempo · demostración.</small>
           <ArrowRight className="home-landing-arrow" size={19}/>
         </Link>
       </div>
