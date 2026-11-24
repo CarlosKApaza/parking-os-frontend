@@ -168,3 +168,50 @@
   .workspace:has(.security-live) .notification-button,
   .workspace:has(.security-live) .quick-profile-trigger{width:35px;height:35px}
 }
+
+/* Selector permanente de 2 cámaras, incluso sin conectar la segunda W77. */
+.security-live-heading>div>p{font-size:11px;color:#879ba0;margin-top:5px}
+.security-live-choices-heading{
+  display:flex;align-items:baseline;justify-content:space-between;gap:9px;
+  margin:7px 0 -4px;
+}
+.security-live-choices-heading h2{font-size:16px;color:#eef4f3;font-weight:800;letter-spacing:-.025em}
+.security-live-choices-heading>span{color:#8b9ca1;font-size:11px;font-weight:600}
+.security-live-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.security-live-choice{
+  display:flex;flex-direction:column;gap:10px;
+  min-width:0;overflow:hidden;text-align:left;
+  padding:10px;background:#1c2327;
+  border:1px solid #384346;border-radius:16px;
+  transition:border-color .18s ease, background .18s ease;
+}
+.security-live-choice.is-selected{background:#24342f;border-color:#87c5a6;box-shadow:inset 0 0 0 1px #73aa8a35}
+.security-live-choice:hover{border-color:#719b8d}
+.security-live-thumb{
+  position:relative;display:grid;place-items:center;overflow:hidden;
+  width:100%;aspect-ratio:16/9;border-radius:11px;
+  border:1px solid #344448;background:#090f13;
+}
+.security-live-thumb>img{width:100%;height:100%;object-fit:cover;display:block}
+.security-live-thumb-offline{display:grid;place-items:center;color:#70878b;width:100%;height:100%;
+  background:linear-gradient(135deg,#0b1419,#161f24)}
+.security-live-choice-caption{display:flex;flex-direction:column;min-width:0;gap:3px;padding:1px 4px 5px}
+.security-live-choice-caption>span{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.security-live-choice-caption strong{font-size:12px;font-weight:800;color:#edf3f1}
+.security-live-choice-caption i{width:7px;height:7px;border-radius:50%;background:#7a8990}
+.security-live-choice-caption i.is-online{background:#63d29a;box-shadow:0 0 0 3px #63d29a20}
+.security-live-choice-caption small{font-size:10px;color:#9aacac;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.security-live-choice-caption em{font-size:10px;font-style:normal;color:#91a1a4;font-weight:650}
+.security-live-choice.is-selected .security-live-choice-caption em{color:#b5f0cd}
+@media(max-width:760px){
+  .security-live-choices{gap:10px}
+  .security-live-choice{padding:7px;gap:7px;border-radius:13px}
+  .security-live-thumb{border-radius:9px}
+  .security-live-choice-caption{gap:3px;padding:0 4px 4px}
+  .security-live-choice-caption strong{font-size:11px}
+  .security-live-choice-caption small{font-size:9px}
+  .security-live-choice-caption em{font-size:9px}
+  .security-live-choices-heading h2{font-size:15px}
+  .security-live-choices-heading>span{font-size:10px}
+  .security-live-heading>div>p{font-size:10px}
+}
