@@ -640,13 +640,75 @@
   }
 }
 
-/* El recurso original mira a la izquierda. Girar solo P1-P4 para mirar
-   hacia el pasillo central; P5-P7 conservan su orientacion original. */
+/* Nuevo sedan HD: frente hacia la DERECHA en el archivo base.
+   P1-P4 miran a la derecha y P5-P7 a la izquierda (pasillo central). */
 .parking-v2-slot.occupied .parking-v2-car-image.parking-v2-car--right,
 .parking-v2-disabled-icon .parking-v2-car-image.parking-v2-car--right {
-  transform: scaleX(-1);
+  transform: none;
 }
 .parking-v2-slot.occupied .parking-v2-car-image.parking-v2-car--left,
 .parking-v2-disabled-icon .parking-v2-car-image.parking-v2-car--left {
-  transform: none;
+  transform: scaleX(-1);
+}
+
+/* Contador a la derecha de Planta unica; controles de cuenta arriba.
+   Solo en el mapa movil de Espacios. */
+@media(max-width:760px){
+  .workspace:has(.parking-v2) > .topbar.topbar-spaces{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) max-content;
+    grid-template-rows:38px 27px;
+    height:88px;
+    min-height:88px;
+    padding:7px 17px 9px;
+    row-gap:2px;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-summary{
+    grid-column:1 / -1;
+    grid-row:2;
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+    min-width:0;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-place{
+    display:flex;
+    gap:5px;
+    min-width:0;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-free{
+    display:flex;
+    flex-shrink:0;
+    align-items:baseline;
+    gap:5px;
+    margin:0;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .workspace:has(.parking-v2) .topbar-spaces-free strong{
+    font-size:22px;
+    color:#adf2cd;
+    font-variant-numeric:tabular-nums;
+  }
+  .workspace:has(.parking-v2) > .topbar.topbar-spaces .topbar-actions{
+    grid-column:2;
+    grid-row:1;
+    align-self:center;
+    justify-self:end;
+  }
+  /* Refuerzo para mantener el recorte realista del nuevo coche en tarjeta y modal. */
+  .parking-v2-slot.occupied .parking-v2-car-image{
+    width:calc(100% - 6px);
+    height:calc(100% - 12px);
+    object-fit:contain;
+  }
+}
+@media(max-width:380px){
+  .workspace:has(.parking-v2) .topbar-spaces-place{font-size:10px}
+  .workspace:has(.parking-v2) .topbar-spaces-free strong{font-size:19px}
 }
