@@ -75,7 +75,7 @@ function CameraPreview({ source, selected, onChoose }: { source: CameraSource; s
 
   const online = status === 'online' && picture !== null
   return <button type="button"
-    className={'security-live-choice' + (selected ? ' is-selected' : '')}
+    className={'security-live-choice camera-' + source.id + (selected ? ' is-selected' : '')}
     aria-pressed={selected}
     aria-label={source.name + ', ' + (online ? 'en vivo' : 'sin conexión')}
     onClick={onChoose}
@@ -85,7 +85,7 @@ function CameraPreview({ source, selected, onChoose }: { source: CameraSource; s
         <span className="security-live-thumb-offline"><VideoOff size={27}/></span>}
     </span>
     <span className="security-live-choice-caption">
-      <span><strong>{source.name}</strong><i className={online ? 'is-online' : ''}/></span>
+      <span><strong>{source.name}</strong><i className={online ? 'is-online' : ''} aria-hidden="true"/></span>
       <small>{source.id === 'entrada' ? 'Entrada' : 'Salida'} <span aria-hidden="true">·</span> {online ? 'En vivo' : status === 'checking' ? 'Conectando…' : 'Sin señal'}</small>
     </span>
   </button>
@@ -217,7 +217,7 @@ export function SecurityPage() {
 
 
 
-    <div className="security-live-card">
+    <div className={'security-live-card camera-' + current.id}>
       <div className="security-live-meta">
         <span className="security-live-camera-icon"><Camera size={19}/></span>
         <div><strong>{current.name}</strong><small>{current.id === 'entrada' ? 'Entrada' : 'Salida'}</small></div>
@@ -242,9 +242,9 @@ export function SecurityPage() {
     </div>
 
     <div className="security-live-toolbar">
-      <span className="security-live-mode">{fluidMode ? 'MJPEG' : 'JPEG'}</span>
+      <span className="security-live-mode"><i aria-hidden="true"/>{fluidMode ? 'Video fluido' : 'Modo compatible'}</span>
       <div>
-        <button type="button" onClick={() => setFluidMode(value => !value)}
+        <button className={fluidMode ? 'is-active' : ''} type="button" aria-pressed={fluidMode} onClick={() => setFluidMode(value => !value)}
           aria-label={fluidMode ? 'Usar modo compatible' : 'Activar alta fluidez'}
           title={fluidMode ? 'Modo compatible (JPEG)' : 'Alta fluidez (MJPEG)'}>
           <Video size={19}/>

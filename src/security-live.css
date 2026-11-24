@@ -242,3 +242,24 @@
  .security-live-choices-heading h2{font-size:17px}.security-live-choice-caption strong{font-size:13px}.security-live-choice-caption small{font-size:10px}
 }
 @media(max-width:370px){.workspace:has(.security-live) .main-content{padding-inline:13px}.security-live-choice-caption small{font-size:9px}}
+
+/* Paleta de Inicio/Espacios: entrada esmeralda, salida azul. El estado real
+   sigue indicado por texto y punto de señal, no por el color de la cámara. */
+.security-live .camera-entrada{--camera-accent:#99f5d1;--camera-border:#2ec7a9;--camera-icon:#1b6855;--camera-bg:linear-gradient(135deg,#06493e,#073f3c 70%,#092d32)}
+.security-live .camera-salida{--camera-accent:#a6e3f5;--camera-border:#42a6d4;--camera-icon:#195478;--camera-bg:linear-gradient(135deg,#10495a,#0a3149 70%,#09263e)}
+.security-live .security-live-card,.security-live .security-live-choice{background:var(--camera-bg);border-color:var(--camera-border)}
+.security-live .security-live-camera-icon{background:var(--camera-icon);color:var(--camera-accent)}
+.security-live .security-live-choice-caption strong{color:#f3fafb}
+.security-live .security-live-choice-caption small{color:var(--camera-accent)}
+.security-live .security-live-choice.is-selected{border-color:var(--camera-accent);box-shadow:inset 0 0 0 1px var(--camera-accent),0 0 15px #5ecfbe18}
+.security-live .security-live-choice:focus-visible{outline:2px solid #87a4ff;outline-offset:3px}
+.security-live .security-live-toolbar button.is-active{background:linear-gradient(135deg,#578fff,#3269ed);border-color:#86a4ff;color:#fff}
+.security-live .security-live-mode{display:flex;align-items:center;gap:6px;letter-spacing:0;font-size:11px!important}
+.security-live-mode i{width:7px;height:7px;background:#8bb3d1;border-radius:50%}
+.security-live .security-live-note{margin-top:0}
+@media(max-width:760px){
+ .security-live{gap:12px}
+ .security-live .security-live-choices{gap:11px}
+ .security-live .security-live-card{padding:9px}
+ .security-live .security-live-toolbar button{width:44px;height:42px}
+}

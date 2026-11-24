@@ -288,3 +288,18 @@ body:has(.account-v2) .dialog-content:not(.parking-v2-sheet) .summary-line{borde
 @media(max-width:760px){.profile-landing{gap:14px}.profile-hero{grid-template-columns:clamp(51px,16vw,75px) minmax(0,1fr);min-height:145px;gap:10px;padding:15px 26% 15px 14px;border-radius:21px}.profile-hero-parking{width:31%}.profile-hero-parking img{width:100%;right:-4%}.profile-quick-card{min-height:117px;padding:15px 13px;border-radius:19px}.profile-quick-arrow{bottom:16px;right:12px;width:21px}.profile-shortcut{min-height:62px;padding:9px 13px;gap:13px;border-radius:17px}.profile-shortcut-icon{width:43px;height:43px;border-radius:13px}.profile-shortcut-icon svg{width:25px;height:25px}}
 @media(max-width:370px){.profile-hero{padding-right:24%;grid-template-columns:49px minmax(0,1fr);gap:8px}.profile-hero-copy h2{font-size:18px}.profile-landing .profile-hero-edit.button{font-size:11px;padding:6px 8px}.profile-hero-parking{width:29%}.profile-quick-grid{gap:9px}.profile-quick-card strong{font-size:17px}.profile-quick-card{min-height:110px}.profile-shortcut{min-height:58px}}
 @media(prefers-reduced-motion:reduce){.profile-quick-card,.profile-shortcut{transition:none}}
+
+/* Estados semánticos de reserva: azul como Reservados de Inicio, verde para
+   visitas finalizadas y gris azulado de Espacios bloqueados para canceladas. */
+.reservations-v2 .reservation-card-active{--res-accent:#a6e3f5;--res-border:#42a6d4;--res-tile:#194d6a;background:linear-gradient(135deg,#10495a,#0a3149 70%,#09263e);border-color:var(--res-border)}
+.reservations-v2 .reservation-card-completed{--res-accent:#a8f7d2;--res-border:#27bda4;--res-tile:#175a49;background:linear-gradient(135deg,#06493e,#073f3c 70%,#092d32);border-color:var(--res-border)}
+.reservations-v2 .reservation-card-cancelled{--res-accent:#c6d9e0;--res-border:#688c9c;--res-tile:#263f50;background:linear-gradient(140deg,#18323f,#102831 65%,#0b242e);border-color:var(--res-border)}
+.reservations-v2 .reservation-card .reservation-card-space{background:var(--res-tile);border-color:var(--res-border);color:var(--res-accent)}
+.reservations-v2 .reservation-card .reservation-card-actions .button{color:var(--res-accent);border-color:var(--res-border)}
+.reservations-v2 .reservation-card .reservation-card-actions{border-color:#99c2ce33}
+.reservations-v2 .reservation-card .reservation-meta{color:#d0e0e3}
+.reservations-v2 .reservation-card .reservation-status.active{background:#28658955;border-color:#63b5dc;color:#c3edff}
+.reservations-v2 .reservation-card .reservation-status.completed{background:#23735c66;border-color:#56ae94;color:#a1f5d5}
+.reservations-v2 .reservation-card .reservation-status.cancelled{background:#72384744;border-color:#a86d80;color:#f1bac5}
+.reservations-v2 .history-filters .search-field{border-radius:14px;overflow:hidden}
+.reservations-v2 .history-filters .search-field input{background:transparent;border:0}
