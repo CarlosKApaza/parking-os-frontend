@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/auth-context'
-import { Check, Clock3, Plus, X } from 'lucide-react'
+import { CalendarDays, Check, Clock3, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels } from '@/lib/model'
-import { money, localDate, tomorrow } from '@/lib/utils'
-import { interval,overlap,type Hold } from '@/services/reservations'
+import { money, localDate, tomorrow, dateLabel } from '@/lib/utils'
+import { interval,overlap,reservedWindows,type Hold } from '@/services/reservations'
 import type { Vehiculo } from '@/services/auth'
 import { carDirection } from '@/lib/car-direction'
 
@@ -29,11 +29,12 @@ function SolidLock({ size = 27 }: { size?: number }) {
 
 
 export function SpacesPage() {
-  const { spaces, statusOf, stats, confirmed, booking, setNotice } = useParkingStore()
+  const { spaces, statusOf, stats, confirmed, booking } = useParkingStore()
   const auth=useAuth(),{user}=auth
   const navigate=useNavigate()
   const [selected,setSelected]=useState<SpaceCode|null>(null)
   const [modalOpen,setModalOpen]=useState(false)
+  const [viewReserved,setViewReserved]=useState(false)
   const [date,setDate]=useState(tomorrow),[from,setFrom]=useState('09:00'),[to,setTo]=useState('11:00')
   const [error,setError]=useState(''),[busy,setBusy]=useState(false),[hold,setHold]=useState<Hold|null>(null),[remaining,setRemaining]=useState(0)
   const [vehicles,setVehicles]=useState<Vehiculo[]>([]),[vehicle,setVehicle]=useState('')
@@ -49,7 +50,9 @@ export function SpacesPage() {
   },[hold])
   const space=selected?spaces.find(s=>s.id===selected):undefined
   const status=space?statusOf(space):'unknown'
-  const canReserve=!!(hold&&remaining>0&&space?.occupancy==='FREE'&&confirmed&&user&&booking.ready)
+  const reservedTimes=selected?reservedWindows(booking.snapshot,selected,booking.serverNow):[]
+  const reservedInfo=viewReserved||reservedTimes.length>0
+  const canReserve=!!(!reservedInfo&&hold&&remaining>0&&space?.occupancy==='FREE'&&confirmed&&user&&booking.ready)
   const dates=interval(date,from,to),minutes=(Date.parse(dates.fechaFin)-Date.parse(dates.fechaInicio))/60000
   const total=Number.isFinite(minutes)&&minutes>0?minutes*DEMO_RATE_BS/60:0
   const validation=Date.parse(dates.fechaInicio)<=booking.serverNow||!Number.isFinite(minutes)||minutes<=0?'Elige un horario futuro y válido.':booking.snapshot?.reservas.some(r=>r.plaza===selected&&overlap(dates.fechaInicio,dates.fechaFin,r.fechaInicio,r.fechaFin))?'La plaza ya está reservada en ese horario.':null
@@ -58,15 +61,16 @@ export function SpacesPage() {
     if(busy)return
     operation.current++
     if(currentHold.current)releaseRef.current(currentHold.current.token)
-    currentHold.current=null;setHold(null);setSelected(null);setModalOpen(false);setError('')
+    currentHold.current=null;setHold(null);setSelected(null);setModalOpen(false);setViewReserved(false);setError('')
   }
   async function chooseSpace(code:SpaceCode){
     if(busy)return
     const item=spaces.find(s=>s.id===code)
     if(!item)return
-    const available=item.occupancy==='FREE'&&confirmed&&booking.ready&&!publicHold(code)
+    const reserved=reservedWindows(booking.snapshot,code,booking.serverNow).length>0
+    const available=!reserved&&statusOf(item)==='free'&&confirmed&&booking.ready&&!publicHold(code)
     if(available&&!user){navigate('/login?next=%2Fespacios');return}
-    setSelected(code);setModalOpen(true);setError('');setDate(tomorrow());setFrom('09:00');setTo('11:00');setVehicles([]);setVehicle('')
+    setViewReserved(reserved);setSelected(code);setModalOpen(true);setError('');setDate(tomorrow());setFrom('09:00');setTo('11:00');setVehicles([]);setVehicle('')
     if(!available)return
     const epoch=++operation.current;setBusy(true)
     try{
@@ -84,8 +88,8 @@ export function SpacesPage() {
     setBusy(true);setError('')
     try{
       const result=await auth.request<{codigo:string}>('/reservas',{method:'POST',body:{token:hold.token,vehiculoId:Number(vehicle),...dates}})
-      currentHold.current=null;setHold(null);setSelected(null);setModalOpen(false);booking.reload();setNotice('Reserva confirmada')
-      navigate('/reservas?detail='+encodeURIComponent(result.codigo))
+      currentHold.current=null;setHold(null);setSelected(null);setModalOpen(false);booking.reload()
+      navigate('/reservas?confirmed=1&detail='+encodeURIComponent(result.codigo))
     }catch(e){setError(e instanceof Error?e.message:'No se pudo reservar.');booking.reload()}finally{setBusy(false)}
   }
 
@@ -109,7 +113,7 @@ export function SpacesPage() {
     if (distance > 85) closeSheet()
   }
 
-  const firstFree = confirmed&&booking.ready ? spaces.find(entry => statusOf(entry) === 'free'&&!publicHold(entry.id))??spaces.find(entry=>entry.occupancy==='FREE'&&!publicHold(entry.id)) : undefined
+  const firstFree = confirmed&&booking.ready ? spaces.find(entry => statusOf(entry) === 'free'&&!publicHold(entry.id)&&!reservedWindows(booking.snapshot,entry.id,booking.serverNow).length) : undefined
 
   const selectMessage = error || (busy?'Consultando el servidor…':status==='occupied'?'Plaza ocupada':status==='unknown'||!confirmed?'Plaza bloqueada':!booking.ready?'Disponibilidad sin confirmar':selected&&publicHold(selected)&&!hold?'Otro cliente está seleccionando esta plaza':!hold?'Vuelve a seleccionar la plaza.':'')
   return <section className="parking-v2" aria-label="Estacionamientos de la maqueta">
@@ -127,9 +131,10 @@ export function SpacesPage() {
           if (!id) return <div key="zona" className="parking-v2-hatch" style={{gridColumn: 3, gridRow: 4}} aria-hidden="true"><i/><i/><i/><i/></div>
           const item = spaces.find(entry => entry.id === id)!
           const itemStatus = statusOf(item)
-          const selecting = item.occupancy==='FREE'&&hold?.plaza===id
-          const otherHold = item.occupancy==='FREE'&&!selecting&&!!publicHold(id)
-          const reserved = itemStatus === 'reserved' && !selecting && !otherHold
+          const windows=reservedWindows(booking.snapshot,id,booking.serverNow)
+          const reserved = itemStatus === 'reserved'
+          const selecting = !reserved&&item.occupancy==='FREE'&&hold?.plaza===id
+          const otherHold = !reserved&&item.occupancy==='FREE'&&!selecting&&!!publicHold(id)
           const locked = itemStatus === 'unknown' || itemStatus === 'reserved'||otherHold
           const displayed = selecting ? 'Seleccionado' : otherHold?'En selección':locked ? itemStatus === 'reserved' ? 'Reservado' : 'Bloqueado' : statusLabels[itemStatus]
           return <button
@@ -146,7 +151,7 @@ export function SpacesPage() {
                 reserved ? <>
                   <img src="/parking-space-sedan-v2.webp" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(id)} alt="" draggable={false}/>
                   <span className="parking-v2-reserved-lock" aria-hidden="true"><SolidLock size={18}/></span>
-                  <span className="parking-v2-reserved-label">Reservado</span>
+                  <span className="parking-v2-reserved-label">Reservado{windows[0]&&<small>{windows[0].from} – {windows[0].to}{windows.length>1?' · +'+(windows.length-1):''}</small>}</span>
                 </> :
                 selecting ? <Check size={23}/> :
                 locked ? <span className="parking-v2-lock-inline"><SolidLock size={27}/><span>{displayed}</span></span> :
@@ -167,11 +172,11 @@ export function SpacesPage() {
       </button>
     </div>
     <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}
-      title={selected ? 'Plaza ' + selected : 'Plaza'} description={canReserve?'Selecciona el horario de tu visita.':selectMessage}
+      title={selected ? 'Plaza ' + selected : 'Plaza'} description={reservedInfo?'Horario de reserva':canReserve?'Selecciona el horario de tu visita.':selectMessage}
       contentClassName="parking-v2-sheet"
       onContentTouchStart={onTouchStart} onContentTouchMove={onTouchMove} onContentTouchEnd={onTouchEnd}
     >
-      {space && (canReserve ? <form className="parking-v2-form" onSubmit={submitBooking}>
+      {space && (reservedInfo ? <div className="reserved-info"><div className="reserved-info-car"><img src="/parking-space-sedan-v2.webp" alt="" className={'parking-v2-car--'+carDirection(selected!)} onError={event=>{if(!event.currentTarget.src.endsWith('/parking-car-realistic.webp'))event.currentTarget.src='/parking-car-realistic.webp'}}/><span><SolidLock size={18}/></span></div>{!booking.ready?<p role="status">Disponibilidad sin confirmar. Vuelve a consultar.</p>:reservedTimes.length?<><div className="reserved-info-windows">{reservedTimes.map(w=><div className="reserved-info-window" key={w.key}><CalendarDays size={19}/><div><small>{dateLabel(w.date)}</small><strong>{w.from} – {w.to}</strong></div><Clock3 size={18}/></div>)}</div><p>Esta plaza ya está reservada. Elige otra disponible.</p></>:<p role="status">La reserva ya no está activa. Cierra para volver a elegir la plaza.</p>}<button type="button" className="reserved-info-close" disabled={busy} onClick={closeSheet}>Entendido <Check size={17}/></button></div> : canReserve ? <form className="parking-v2-form" onSubmit={submitBooking}>
         <div className="parking-v2-progress">
           <span><Check size={14}/>Seleccionado</span>
           <span><Clock3 size={14}/>{remaining} s para confirmar</span>

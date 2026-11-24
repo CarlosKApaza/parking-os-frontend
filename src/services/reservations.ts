@@ -20,3 +20,10 @@ export function serverTimeAt(serverIso:string,receivedAt:number,monotonicNow:num
 export function activePublicHold(snapshot:Availability|null,code:SpaceCode,serverNow:number){
   return snapshot?.retenciones.find(h=>h.plaza===code&&Date.parse(h.venceEn)>serverNow)
 }
+
+/** Horarios públicos: sin información del titular, vehículo o código de reserva. */
+export function reservedWindows(snapshot:Availability|null,plaza:SpaceCode,serverNow:number){
+  return (snapshot?.reservas??[]).filter(r=>r.plaza===plaza&&Date.parse(r.fechaFin)>serverNow)
+    .sort((a,b)=>Date.parse(a.fechaInicio)-Date.parse(b.fechaInicio))
+    .map(r=>({date:boliviaFields(r.fechaInicio).date,from:boliviaFields(r.fechaInicio).time,to:boliviaFields(r.fechaFin).time,key:r.fechaInicio+'_'+r.fechaFin}))
+}

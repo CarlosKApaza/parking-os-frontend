@@ -8,5 +8,6 @@ import './home-overview.css'
 import './security-live.css'
 import './account-v2.css'
 import './auth.css'
+import './reservation-polish.css'
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>)

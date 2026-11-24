@@ -58,7 +58,7 @@ export function Layout() {
       <span className="mode-pill"><i/>{isLiveOccupancy ? 'Plazas reales' : 'Modo demo'}</span>
       <div className="header-quick-actions" ref={quickActionsRef}>
         <div className="quick-menu-anchor">
-          <button className="notification-button" aria-label="Ver notificaciones" aria-expanded={openMenu === 'notifications'} aria-controls="notifications-panel" onClick={() => setOpenMenu(current => current === 'notifications' ? null : 'notifications')}><Bell size={19}/>{activeCount > 0 && <i/>}</button>
+          <button className="notification-button header-action" aria-label="Ver notificaciones" aria-expanded={openMenu === 'notifications'} aria-controls="notifications-panel" onClick={() => setOpenMenu(current => current === 'notifications' ? null : 'notifications')}><Bell size={19}/>{activeCount > 0 && <i/>}</button>
           <AnimatePresence>{openMenu === 'notifications' && <motion.section id="notifications-panel" className="quick-menu-panel notifications-panel" aria-label="Tus notificaciones" initial={reducedMotion ? false : { opacity: 0, y: -9, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: .97 }} transition={{ duration: .18, ease: 'easeOut' }}>
             <div className="quick-menu-header"><span>NOTIFICACIONES</span><span className="quick-menu-count">{activeCount || '0'}</span></div>
             <div className="quick-menu-message"><span className="quick-menu-icon"><CalendarDays size={18}/></span><span><strong>{activeCount ? `${activeCount} reserva${activeCount > 1 ? 's' : ''} activa${activeCount > 1 ? 's' : ''}` : 'Todo al día'}</strong><small>{activeCount ? 'Consulta los detalles de tus próximas visitas.' : 'Sin novedades pendientes por ahora.'}</small></span></div>
@@ -67,7 +67,7 @@ export function Layout() {
           </motion.section>}</AnimatePresence>
         </div>
         <div className="quick-menu-anchor">
-          <button className="avatar small-avatar quick-profile-trigger" aria-label="Opciones de mi cuenta" aria-expanded={openMenu === 'profile'} aria-controls="profile-panel" onClick={() => setOpenMenu(current => current === 'profile' ? null : 'profile')}>{name.slice(0, 1).toUpperCase()}</button>
+          <button className="avatar small-avatar quick-profile-trigger header-action" aria-label="Opciones de mi cuenta" aria-expanded={openMenu === 'profile'} aria-controls="profile-panel" onClick={() => setOpenMenu(current => current === 'profile' ? null : 'profile')}>{name.slice(0, 1).toUpperCase()}</button>
           <AnimatePresence>{openMenu === 'profile' && <motion.section id="profile-panel" className="quick-menu-panel profile-panel" aria-label="Opciones de la cuenta" initial={reducedMotion ? false : { opacity: 0, y: -9, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: .97 }} transition={{ duration: .18, ease: 'easeOut' }}>
             <div className="quick-profile-header"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{user ? 'Mi cuenta' : 'Consulta pública'}</small></span></div>
             <nav className="quick-profile-links" aria-label="Accesos rápidos de la cuenta">

@@ -1,0 +1,76 @@
+/* Cabecera compartida: referencia visual de Inicio. No cambia altura ni navegación. */
+.workspace > .topbar .topbar-actions .header-quick-actions{display:flex;align-items:center;gap:8px}
+.workspace > .topbar .header-quick-actions .quick-menu-anchor > button.header-action{
+  display:grid;place-items:center;flex:none;width:40px;height:40px;min-width:40px;
+  padding:0;border-radius:50%;color:#f1f8fb;font-size:12px;font-weight:750;
+  box-shadow:none;
+}
+.workspace > .topbar .header-quick-actions .quick-menu-anchor > button.notification-button.header-action{
+  background:transparent;border:1px solid transparent;
+}
+.workspace > .topbar .header-quick-actions .quick-menu-anchor > button.quick-profile-trigger.header-action{
+  background:#283e54;border:1px solid #465b6a;
+}
+.workspace > .topbar .header-quick-actions .quick-menu-anchor > button.header-action:hover,
+.workspace > .topbar .header-quick-actions .quick-menu-anchor > button.header-action[aria-expanded=true]{
+  background:#314c62;border-color:#668095;
+}
+.workspace > .topbar .header-quick-actions .notification-button.header-action i{
+  top:7px;right:7px;width:6px;height:6px;background:#85a0ff;
+}
+@media(max-width:360px){
+ .workspace > .topbar .header-quick-actions .quick-menu-anchor > button.header-action{width:36px;height:36px;min-width:36px}
+ .workspace > .topbar .topbar-actions .header-quick-actions{gap:6px}
+}
+
+/* Comprobante compacto de la reserva propia. */
+body:has(.account-v2) .dialog-content.reservation-receipt:not(.parking-v2-sheet){
+  width:min(410px,calc(100% - 28px));padding:22px;max-height:calc(100dvh - 32px);
+  background:linear-gradient(145deg,#10343f,#09242d);overflow-y:auto;
+}
+body:has(.account-v2) .dialog-content.reservation-receipt .dialog-title{
+  font-size:clamp(22px,6vw,27px);padding-right:34px;line-height:1.2;
+}
+body:has(.account-v2) .dialog-content.reservation-receipt .dialog-description{margin:6px 0 15px;font-size:12px}
+.receipt-hero{
+  display:flex;align-items:center;justify-content:space-between;position:relative;isolation:isolate;
+  border-radius:17px;border:1px solid #49b39c;background:linear-gradient(130deg,#15564e,#0b343d);
+  padding:14px 16px;min-height:108px;overflow:hidden;
+}
+.receipt-hero>div{display:flex;flex-direction:column;align-items:flex-start;gap:3px;z-index:1}
+.receipt-hero>div>small{font-size:10px;letter-spacing:1.7px;color:#a8d8cc;font-weight:750}
+.receipt-hero>div>strong{font-size:38px;line-height:1.05;font-weight:850;color:#a1f5d5;letter-spacing:-.05em}
+.receipt-hero>img{width:47%;height:92px;object-fit:contain;transform:rotate(-22deg);filter:drop-shadow(0 6px 6px #001a2080)}
+.receipt-status{display:flex;align-items:center;gap:4px;color:#a1f5d5;font-size:11px;font-weight:700;margin-top:3px}
+.receipt-hero.cancelled{background:linear-gradient(145deg,#45303a,#172d36);border-color:#b66e80}
+.receipt-hero.cancelled>div>strong,.receipt-status.cancelled{color:#ffbdc7}
+.receipt-hero.cancelled>img{filter:grayscale(1);opacity:.65}
+.receipt-details{display:grid;gap:0;margin:9px 0 12px}
+.receipt-details>div{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #31515b;color:#9fc5cd}
+.receipt-details>div>span{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:1;font-size:12px}
+.receipt-details strong{color:#f1f8f9;font-weight:750;font-size:13px;text-align:right}
+.receipt-code{display:flex;align-items:center;gap:10px;border:1px dashed #426e7b;border-radius:12px;background:#0a2530;padding:10px 12px;color:#a3c6d2}
+.receipt-code>span{display:flex;flex-direction:column;gap:4px;font-size:10px;min-width:0}
+.receipt-code strong{font-size:12px;color:#e2eff4;font-weight:720;overflow-wrap:anywhere;letter-spacing:.02em}
+.receipt-note{font-size:10px;color:#acc5ca;line-height:1.45;margin:12px 0}
+body:has(.account-v2) .reservation-receipt .receipt-done.button{background:linear-gradient(110deg,#b4ffe3,#72efc2);border:1px solid #abf9df;color:#10392e;font-weight:800}
+@media(max-width:360px){body:has(.account-v2) .dialog-content.reservation-receipt:not(.parking-v2-sheet){padding:17px}.receipt-details>div{padding:8px 0}.receipt-hero{min-height:98px}.receipt-hero>img{height:80px}}
+
+/* Horario público: solo consulta, sin retención ni datos privados. */
+.parking-v2-slot.reserved .parking-v2-car-image{height:57%;transform:translateY(-5px)}
+.parking-v2-slot.reserved .parking-v2-car-image.parking-v2-car--right{transform:translateY(-5px)}
+.parking-v2-slot.reserved .parking-v2-car-image.parking-v2-car--left{transform:translateY(-5px) scaleX(-1)}
+.parking-v2-reserved-label{display:flex;flex-direction:column;align-items:center;gap:2px;bottom:5px}
+.parking-v2-reserved-label small{font-size:9px;color:#b4d6e8;font-weight:650;line-height:1.1;white-space:nowrap}
+.reserved-info{display:flex;flex-direction:column;gap:13px}
+.reserved-info-car{position:relative;display:grid;place-items:center;min-height:112px;border:1px solid #426b82;border-radius:16px;background:linear-gradient(140deg,#163e51,#0c2c3b)}
+.reserved-info-car img{width:76%;height:92px;object-fit:contain;filter:grayscale(1) brightness(.8) drop-shadow(0 5px 5px #0007)}
+.reserved-info-car img.parking-v2-car--left{transform:scaleX(-1)}
+.reserved-info-car>span{position:absolute;right:10px;top:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;border:1px solid #648b9d;background:#0b2535;color:#f1f8fb}
+.reserved-info-windows{display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto}
+.reserved-info-window{display:flex;align-items:center;gap:12px;border:1px solid #426778;background:#102b38;border-radius:13px;padding:12px;color:#b7d6e5}
+.reserved-info-window>div{flex:1;display:flex;flex-direction:column;gap:4px}
+.reserved-info-window small{font-size:12px;color:#b4cbd3}
+.reserved-info-window strong{font-size:17px;color:#e6f4fa;font-variant-numeric:tabular-nums}
+.reserved-info>p{font-size:12px;color:#b8cdd3;line-height:1.5}
+.reserved-info-close{display:flex;align-items:center;justify-content:center;gap:8px;min-height:45px;border-radius:13px;background:linear-gradient(110deg,#b4ffe3,#72efc2);color:#123c30;font-weight:800;font-size:14px}
