@@ -32,3 +32,5 @@
 @media(prefers-reduced-motion:reduce){.auth-loading-line:before{animation:none}}
 
 .app-shell:has(.auth-splash) .sidebar,.app-shell:has(.auth-splash) .topbar,.app-shell:has(.auth-splash) .bottom-nav,.app-shell:has(.auth-splash) .page-footer{visibility:hidden}
+
+.auth-restore{text-align:center}.auth-restore>p[role=status]{color:#b6cbd2;font-size:14px}.auth-restore>.auth-text-link{background:transparent}
