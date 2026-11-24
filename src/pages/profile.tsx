@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, CalendarDays, CarFront, Check, ChevronRight, Code2, CreditCard, Crown, Edit3, Plus, Radio, ShieldCheck, Trash2, UserRound, Wallet, WifiOff } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, Camera, CarFront, Check, Code2, Edit3, Plus, Radio, ReceiptText, Trash2, UserRound, Wallet, WifiOff } from 'lucide-react'
 import { EmptyState } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/dialog'
 import { useParkingStore } from '@/context/parking-context'
-import { demoPaymentHistory, type Vehicle } from '@/lib/model'
+import { type Vehicle } from '@/lib/model'
 
 export function ProfilePage() {
   const { demo, update, isDemo, isLiveOccupancy, setNotice, simulatedOffline, setSimulatedOffline, resetDemo } = useParkingStore()
@@ -13,7 +13,32 @@ export function ProfilePage() {
   const [simulator, setSimulator] = useState(false)
   const [resetting, setResetting] = useState(false)
   function save(event: FormEvent) { event.preventDefault(); if (!name.trim()) return; update(s => ({ ...s, name: name.trim() })); setEditing(false); setNotice('Nombre de demostración actualizado') }
-  return <div className="account-v2 account-profile"><h1>Mi perfil</h1><p className="account-subtitle">Tu cuenta, vehículos y actividad.</p><div className="profile-layout"><section className="profile-card"><span className="profile-avatar">{isDemo ? demo.name.slice(0,1).toUpperCase() : <UserRound size={32}/>}</span><div className="profile-identity"><h2>{isDemo ? demo.name : 'Visitante'}</h2><span className="profile-role">{isDemo ? 'Cuenta de demostración' : 'Consulta pública'}</span><span className="profile-plan"><Crown size={13}/>{isDemo && demo.plus ? 'Parking Plus · Demo' : 'Plan estándar'}</span></div><Button className="profile-edit" variant="outline" size="icon" aria-label="Editar nombre" title="Editar nombre" disabled={!isDemo} onClick={() => { setName(demo.name); setEditing(true) }}><Edit3 size={18}/></Button></section><section className="profile-settings"><h2>Mi actividad</h2><Link className="profile-history-feature" to="/perfil/pagos"><span className="history-icon"><CreditCard size={26}/></span><span><strong>Historial de pagos</strong><small>{isDemo ? demoPaymentHistory(demo).length : 0} pagos · Ver comprobantes</small></span><ArrowRight size={23}/></Link><div className="profile-links">{[{to:'/vehiculos',Icon:CarFront,title:'Mis vehículos',description:'Placas registradas'}, {to:'/billetera',Icon:Wallet,title:'Mi billetera',description:'Saldo y movimientos'}, {to:'/reservas',Icon:CalendarDays,title:'Mis reservas',description:'Próximas visitas e historial'}, {to:'/seguridad',Icon:ShieldCheck,title:'Seguridad',description:'Cámaras en vivo'}].map(({to,Icon,title,description}) => <Link className="profile-link" to={to} key={to}><span className="tile-icon"><Icon size={21}/></span><span><strong>{title}</strong><small>{description}</small></span><ChevronRight size={18}/></Link>)}</div><div className="privacy-note"><ShieldCheck size={20}/><p>Cuenta local de prueba. Sin cobros automáticos.</p></div></section></div>
+  return <div className="account-v2 account-profile profile-landing">
+    <h1>Mi perfil</h1>
+    <section className="profile-hero" aria-label="Mi cuenta">
+      <div className="profile-hero-parking" aria-hidden="true">
+        <span className="profile-lane lane-first"/><span className="profile-lane lane-last"/>
+        <span className="profile-bracket bracket-top"/><span className="profile-bracket bracket-bottom"/>
+        <img src="/parking-space-sedan-v2.webp" alt="" draggable={false} decoding="async"/>
+      </div>
+      <span className="profile-hero-avatar">{isDemo ? demo.name.slice(0,1).toUpperCase() : <UserRound size={28}/>}</span>
+      <div className="profile-hero-copy">
+        <h2>{isDemo ? demo.name : 'Visitante'}</h2>
+        <p>{isDemo ? demo.plus ? 'Parking Plus · Demo' : 'Cuenta de demostración' : 'Consulta pública'}</p>
+        <Button variant="outline" className="profile-hero-edit" disabled={!isDemo} onClick={() => {setName(demo.name);setEditing(true)}}><Edit3 size={16}/>Editar perfil</Button>
+      </div>
+    </section>
+    <nav className="profile-quick-grid" aria-label="Actividad de mi cuenta">
+      <Link to="/perfil/pagos" className="profile-quick-card profile-quick-payments"><ReceiptText size={30} strokeWidth={1.9}/><strong>Historial<br/>de pagos</strong><ArrowRight className="profile-quick-arrow" size={24}/></Link>
+      <Link to="/reservas" className="profile-quick-card profile-quick-reservations"><CalendarDays size={30} strokeWidth={1.9}/><strong>Reservas</strong><ArrowRight className="profile-quick-arrow" size={24}/></Link>
+    </nav>
+    <nav className="profile-shortcuts" aria-label="Opciones de mi perfil">
+      {[
+        {to:'/vehiculos',Icon:CarFront,title:'Mis vehículos',tone:'mint'},
+        {to:'/billetera',Icon:Wallet,title:'Billetera',tone:'blue'},
+        {to:'/seguridad',Icon:Camera,title:'Cámaras',tone:'mint'},
+      ].map(({to,Icon,title,tone}) => <Link className={'profile-shortcut '+tone} to={to} key={to}><span className="profile-shortcut-icon"><Icon size={27} strokeWidth={1.9}/></span><strong>{title}</strong><ArrowRight size={23}/></Link>)}
+    </nav>
     {isDemo && !isLiveOccupancy && <section className="simulator-panel"><button className="simulator-toggle" onClick={() => setSimulator(!simulator)} aria-expanded={simulator}><Code2 size={18}/><span>Herramientas de demostración</span><Plus size={17}/></button>{simulator && <div className="simulator-content"><p>Cambia la ocupación de P2 para ver cómo responden el plano y los contadores. Las pruebas no envían órdenes a ningún dispositivo.</p><div className="simulator-buttons"><Button variant="outline" onClick={() => { update(s => ({ ...s, occupancy: s.occupancy.map((status,i) => i === 1 ? status === 'OCCUPIED' ? 'FREE' : 'OCCUPIED' : status) })); setNotice('Estado simulado de P2 actualizado') }}><Radio size={17}/>Cambiar estado de P2</Button><Button variant="outline" onClick={() => setSimulatedOffline(!simulatedOffline)}><WifiOff size={17}/>{simulatedOffline ? 'Restaurar señal' : 'Simular pérdida de señal'}</Button><Button variant="outline" onClick={() => setResetting(true)}>Reiniciar datos de prueba</Button></div></div>}</section>}
     <Modal open={resetting} onOpenChange={setResetting} title="¿Empezar una nueva demostración?" description="Se restablecerán el saldo, los tokens, los tickets y las reservas. También se quitarán los vehículos ficticios guardados en este navegador."><div className="dialog-actions"><Button variant="outline" onClick={() => setResetting(false)}>Conservar datos</Button><Button onClick={() => { resetDemo(); setResetting(false) }}>Reiniciar demo</Button></div></Modal>
     <Modal open={editing} onOpenChange={setEditing} title="Editar perfil" description="Actualiza tu nombre de demostración."><form onSubmit={save}><label className="field-label" htmlFor="profile-name">Nombre</label><input id="profile-name" autoComplete="nickname" value={name} onChange={e => setName(e.target.value)} maxLength={30} required/><Button className="w-full mt-6" type="submit" disabled={!name.trim()}>Guardar cambios<Check size={17}/></Button></form></Modal></div>

@@ -249,3 +249,42 @@ body:has(.account-v2) .dialog-content:not(.parking-v2-sheet) .summary-line{borde
  body:has(.account-v2) .dialog-content:not(.parking-v2-sheet){padding:22px 19px;max-height:calc(100dvh - 40px)}
 }
 @media(max-width:370px){.account-title-row{gap:6px}.account-title-row h1{font-size:24px}.wallet-v2 .wallet-tabs button{font-size:10px}.reservations-v2 .reservation-meta{font-size:9px}.reservations-v2 .reservation-card-space{min-width:52px;width:52px}.reservations-v2 .reservation-card{grid-template-columns:52px minmax(0,1fr)}}
+
+/* Perfil de referencia · portada compacta, con el automóvil ya disponible. */
+.profile-landing{max-width:680px;gap:16px}
+.profile-landing>h1{font-size:clamp(32px,6.4vw,44px);margin:0 0 4px}
+.profile-hero{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:clamp(58px,12vw,90px) minmax(0,1fr);align-items:center;gap:14px;min-height:166px;padding:20px 28% 20px 18px;border:1px solid #4ad8b7;border-radius:24px;background:radial-gradient(ellipse at 100% 25%,#087b59 0%,transparent 60%),linear-gradient(120deg,#103b48,#062d35 60%,#064438);box-shadow:inset 0 1px 0 #b1ffdf18}
+.profile-hero-avatar{position:relative;z-index:2;display:grid;place-items:center;aspect-ratio:1;width:100%;border-radius:50%;background:linear-gradient(145deg,#365e7b,#284d68);border:1px solid #7c9eb9;color:#f4faff;font-size:clamp(29px,6vw,43px);font-weight:800}
+.profile-hero-copy{position:relative;z-index:2;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.profile-hero-copy h2{font-size:clamp(19px,4vw,29px);line-height:1.16;letter-spacing:-.045em;font-weight:850;overflow-wrap:anywhere;max-width:100%}
+.profile-hero-copy p{font-size:clamp(10px,2.6vw,13px);line-height:1.4;color:#c3d9de}
+.profile-landing .profile-hero-edit.button{display:inline-flex;gap:7px;margin-top:5px;min-height:36px;padding:7px 11px;border-radius:13px;border-color:#719ba9;background:#153a47a8;color:#effbff;font-size:12px;font-weight:650;white-space:nowrap}
+.profile-hero-parking{position:absolute;z-index:0;top:0;right:0;bottom:0;width:34%;overflow:hidden;pointer-events:none}
+.profile-hero-parking img{position:absolute;width:88%;height:108%;top:-4%;right:-1%;object-fit:contain;transform:rotate(-28deg);filter:drop-shadow(0 6px 6px #0006)}
+.profile-lane{position:absolute;width:6px;height:155%;top:-27%;background:linear-gradient(180deg,transparent,#20c38b8c,transparent);transform:rotate(31deg)}
+.profile-lane.lane-first{left:24%}.profile-lane.lane-last{right:9%}
+.profile-bracket{position:absolute;z-index:1;width:19px;height:19px;border-color:#8bfbd4;filter:drop-shadow(0 0 6px #46ecb7)}
+.profile-bracket.bracket-top{top:14%;left:23%;border-left:4px solid;border-top:4px solid;border-radius:5px 0 0 0;color:#8bfbd4}
+.profile-bracket.bracket-bottom{bottom:12%;right:12%;border-right:4px solid;border-bottom:4px solid;border-radius:0 0 5px 0;color:#8bfbd4}
+.profile-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.profile-quick-card{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:12px;min-height:133px;border:1px solid;border-radius:21px;padding:18px 15px;text-decoration:none;transition:transform .16s,border-color .16s}
+.profile-quick-card:before,.profile-quick-card:after{content:'';position:absolute;z-index:-1;right:-24px;bottom:-62px;width:130px;height:130px;border-radius:40px;transform:rotate(-24deg);background:currentColor;opacity:.055}
+.profile-quick-card:after{right:-41px;bottom:-85px;width:150px;height:150px}
+.profile-quick-card strong{font-size:clamp(18px,4.3vw,24px);line-height:1.14;letter-spacing:-.04em;font-weight:850;padding-right:23px}
+.profile-quick-arrow{position:absolute;bottom:20px;right:15px}
+.profile-quick-payments{background:linear-gradient(130deg,#b0ffe2,#78efc6);border-color:#a4f9da;color:#07372e}
+.profile-quick-payments>svg:first-child{color:#087858}
+.profile-quick-reservations{background:linear-gradient(130deg,#174f70,#092c42);border-color:#3d91c3;color:#f3f9ff}
+.profile-quick-reservations>svg:first-child{color:#a0d5ff;filter:drop-shadow(0 0 5px #409eff55)}
+.profile-quick-reservations .profile-quick-arrow{color:#8ef5d6}
+.profile-shortcuts{display:flex;flex-direction:column;gap:10px;margin-top:3px}
+.profile-shortcut{display:flex;align-items:center;gap:17px;min-height:69px;padding:10px 17px;border:1px solid #37636f;border-radius:20px;background:linear-gradient(125deg,#103c48,#0a2c35);color:#f3fafb;transition:background .16s,border-color .16s}
+.profile-shortcut strong{flex:1;min-width:0;font-size:clamp(17px,4.5vw,22px);font-weight:800;letter-spacing:-.035em}
+.profile-shortcut-icon{display:grid;place-items:center;width:46px;height:46px;flex:none;border-radius:15px;background:linear-gradient(140deg,#217d61,#155446);color:#a4ffe0}
+.profile-shortcut.blue .profile-shortcut-icon{background:linear-gradient(140deg,#226fa1,#12445f);color:#b3dfff}
+.profile-shortcut:hover{border-color:#82e8cd;background:#124652}
+.profile-quick-card:hover{transform:translateY(-2px);border-color:#d1ffe9}
+@media(min-width:761px){.profile-hero{min-height:184px;grid-template-columns:94px minmax(0,1fr);padding:23px 29% 23px 25px;gap:18px}.profile-quick-card{min-height:155px;padding:21px}.profile-quick-arrow{right:21px}.profile-shortcut{min-height:78px}}
+@media(max-width:760px){.profile-landing{gap:14px}.profile-hero{grid-template-columns:clamp(51px,16vw,75px) minmax(0,1fr);min-height:145px;gap:10px;padding:15px 26% 15px 14px;border-radius:21px}.profile-hero-parking{width:31%}.profile-hero-parking img{width:100%;right:-4%}.profile-quick-card{min-height:117px;padding:15px 13px;border-radius:19px}.profile-quick-arrow{bottom:16px;right:12px;width:21px}.profile-shortcut{min-height:62px;padding:9px 13px;gap:13px;border-radius:17px}.profile-shortcut-icon{width:43px;height:43px;border-radius:13px}.profile-shortcut-icon svg{width:25px;height:25px}}
+@media(max-width:370px){.profile-hero{padding-right:24%;grid-template-columns:49px minmax(0,1fr);gap:8px}.profile-hero-copy h2{font-size:18px}.profile-landing .profile-hero-edit.button{font-size:11px;padding:6px 8px}.profile-hero-parking{width:29%}.profile-quick-grid{gap:9px}.profile-quick-card strong{font-size:17px}.profile-quick-card{min-height:110px}.profile-shortcut{min-height:58px}}
+@media(prefers-reduced-motion:reduce){.profile-quick-card,.profile-shortcut{transition:none}}
