@@ -79,7 +79,7 @@ function CameraPreview({ source, selected, onChoose }: { source: CameraSource; s
     onClick={onChoose}
   >
     <span className="security-live-thumb">
-      {online ? <img src={picture} alt="" draggable={false}/> :
+      {online && picture ? <img src={picture} alt="" draggable={false}/> :
         <span className="security-live-thumb-offline"><VideoOff size={27}/></span>}
     </span>
     <span className="security-live-choice-caption">
