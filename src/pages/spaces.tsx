@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
-import { Check, Clock3, LockKeyhole, MapPin, Plus, X } from 'lucide-react'
+import { Check, Clock3, MapPin, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
@@ -9,6 +9,19 @@ import { useSpaceHold } from '@/hooks/use-space-hold'
 import { carDirection } from '@/lib/car-direction'
 
 const order: (SpaceCode | null)[] = ['P1', 'P5', 'P2', 'P6', 'P3', 'P7', 'P4', null]
+
+/** Candado blanco sólido, con hueco de llave oscuro sobre fondos teal. */
+function SolidLock({ size = 27 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    aria-hidden="true" focusable="false">
+    <path d="M7.5 10V7a4.5 4.5 0 0 1 9 0v3" stroke="currentColor"
+      strokeWidth="2.6" strokeLinecap="round"/>
+    <rect x="3.25" y="9.7" width="17.5" height="12.5" rx="2.7" fill="currentColor"/>
+    <circle cx="12" cy="15.1" r="1.4" fill="#0c2a31"/>
+    <path d="M12 16.4v2.2" stroke="#0c2a31" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+}
+
 
 
 
@@ -151,9 +164,9 @@ export function SpacesPage() {
           >
             <span className="parking-v2-code">{id}</span>
             <span className="parking-v2-icon">
-              {itemStatus === 'occupied' ? <img src="/parking-car-hd.avif" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(id)} alt="" draggable={false} /> :
+              {itemStatus === 'occupied' ? <img src="/parking-space-sedan-v2.webp" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(id)} alt="" draggable={false} /> :
                 selecting ? <Check size={23}/> :
-                locked ? <span className="parking-v2-lock-inline"><LockKeyhole size={24}/><span>{displayed}</span></span> :
+                locked ? <span className="parking-v2-lock-inline"><SolidLock size={27}/><span>{displayed}</span></span> :
                 <Plus size={26}/>}
             </span>
             {!locked && itemStatus !== 'occupied' && <span className="parking-v2-status">{displayed}</span>}
@@ -200,7 +213,7 @@ export function SpacesPage() {
           <button type="submit" disabled={!!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
         </div>
       </form> : <div className="parking-v2-disabled">
-        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <img src="/parking-car-hd.avif" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(selected!)} alt="" draggable={false} /> : <LockKeyhole size={30}/>}</div>
+        <div className="parking-v2-disabled-icon">{status === 'occupied' ? <img src="/parking-space-sedan-v2.webp" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(selected!)} alt="" draggable={false} /> : <SolidLock size={31}/>}</div>
         <strong>{selectMessage}</strong>
         <button type="button" onClick={closeSheet}>Entendido <X size={17}/></button>
       </div>)}
