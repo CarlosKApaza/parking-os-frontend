@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Camera, Maximize2, RefreshCw, VideoOff, WifiOff } from 'lucide-react'
+import { Camera, Maximize2, RefreshCw, Video, VideoOff, WifiOff } from 'lucide-react'
 import { cameraSources, type CameraSource } from '@/services/camera'
 
 type CameraStatus = 'checking' | 'online' | 'offline' | 'unsupported'
@@ -86,8 +86,7 @@ function CameraPreview({ source, selected, onChoose }: { source: CameraSource; s
     </span>
     <span className="security-live-choice-caption">
       <span><strong>{source.name}</strong><i className={online ? 'is-online' : ''}/></span>
-      <small>{source.zone}</small>
-      <em>{online ? 'En vivo' : status === 'checking' ? 'Conectando…' : 'Sin conexión'}</em>
+      <small>{source.id === 'entrada' ? 'Entrada' : 'Salida'} <span aria-hidden="true">·</span> {online ? 'En vivo' : status === 'checking' ? 'Conectando…' : 'Sin señal'}</small>
     </span>
   </button>
 }
@@ -213,9 +212,7 @@ export function SecurityPage() {
   return <section className="security-live" aria-label="Videovigilancia de Parking OS">
     <div className="security-live-heading">
       <h1>Seguridad</h1>
-      <span className={'security-live-indicator ' + (active ? 'is-online' : '')} role="status">
-        <i aria-hidden="true"/>{label}
-      </span>
+ 
     </div>
 
 
@@ -223,8 +220,8 @@ export function SecurityPage() {
     <div className="security-live-card">
       <div className="security-live-meta">
         <span className="security-live-camera-icon"><Camera size={19}/></span>
-        <div><strong>{current.name}</strong><small>{current.zone} · Maqueta física</small></div>
-        <span className="security-live-quality">{current.model}</span>
+        <div><strong>{current.name}</strong><small>{current.id === 'entrada' ? 'Entrada' : 'Salida'}</small></div>
+        <span className={'security-live-indicator ' + (active ? 'is-online' : '')} role="status"><i aria-hidden="true"/>{label}</span>
       </div>
       <div className="security-live-stage" ref={frameRef}>
         {active && frameUrl && <img
@@ -241,29 +238,28 @@ export function SecurityPage() {
           <p>{guidance}</p>
           {status !== 'checking' && <button type="button" onClick={reconnect}><RefreshCw size={16}/>Reintentar</button>}
         </div>}
-        {active && <span className="security-live-overlay">● EN VIVO</span>}
-      </div>
+       </div>
     </div>
 
     <div className="security-live-toolbar">
-      <span>Vista compartida · {fluidMode ? 'Alta fluidez' : 'Modo compatible'}</span>
+      <span className="security-live-mode">{fluidMode ? 'MJPEG' : 'JPEG'}</span>
       <div>
         <button type="button" onClick={() => setFluidMode(value => !value)}
           aria-label={fluidMode ? 'Usar modo compatible' : 'Activar alta fluidez'}
           title={fluidMode ? 'Modo compatible (JPEG)' : 'Alta fluidez (MJPEG)'}>
-          <Camera size={18}/><span>{fluidMode ? 'Compatible' : 'Más FPS'}</span>
+          <Video size={19}/>
         </button>
         <button type="button" onClick={reconnect} aria-label="Reconectar transmisión" title="Reconectar">
-          <RefreshCw size={18}/><span>Reconectar</span>
+          <RefreshCw size={19}/>
         </button>
         <button type="button" onClick={expand} disabled={!active} aria-label="Ampliar cámara" title="Pantalla completa">
-          <Maximize2 size={18}/><span>Ampliar</span>
+          <Maximize2 size={19}/>
         </button>
       </div>
     </div>
     {fullscreenError && <p className="security-live-message" role="status">{fullscreenError}</p>}
     <div className="security-live-choices-heading">
-      <h2>Tus cámaras</h2><span>Selecciona una vista</span>
+      <h2>Tus cámaras</h2>
     </div>
     <div className="security-live-choices" role="group" aria-label="Cámaras disponibles">
       {sources.map(source => <CameraPreview
@@ -274,6 +270,6 @@ export function SecurityPage() {
       />)}
     </div>
 
-    <p className="security-live-note">Transmisión en red local privada · El reconocimiento de placas se añadirá después.</p>
+    <p className="security-live-note"><span>Red local privada</span></p>
   </section>
 }

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, CalendarDays, Check, Clock3, Coins, House, QrCode, ReceiptText, ScanLine, Ticket, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,12 @@ export function PaymentPage() {
   const [error, setError] = useState('')
   const next = demoExitTickets.find(t => !demo.paidTickets.includes(t.id))
   const paid = demoPaymentHistory(demo).find(p => p.ticket === selected.id)
-  const stage = step === 2 ? 2 : step
+  const stage = step
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    if (step > 0) titleRef.current?.focus({ preventScroll: true })
+  }, [step])
   function lookup(event?: FormEvent, sample = false) {
     event?.preventDefault()
     if (!isDemo) return
@@ -30,10 +35,10 @@ export function PaymentPage() {
     try { pay(selected.id, method); setError(''); setStep(2) }
     catch (err) { setError((err as Error).message) }
   }
-  return <div className="exit-payment account-v2">
+  return <div className={'exit-payment account-v2' + (step === 2 ? ' exit-payment-complete' : '')}>
     {step > 0 && <button className="account-back" onClick={() => { setStep(0); setError('') }}><ArrowLeft size={20}/>Pagar salida</button>}
     {step === 0 && <h1>Pagar salida</h1>}
-    {step === 1 && <h1>Resumen de pago</h1>}
+    {step === 1 && <h1 ref={titleRef} tabIndex={-1}>Resumen de pago</h1>}
     <ol className="exit-steps" aria-label="Progreso del pago">{['Ticket','Resumen','Pago'].map((label,i) => <li key={label} aria-current={stage === i ? 'step' : undefined} className={i < stage ? 'done' : i === stage ? 'current' : ''}><span>{i < stage ? <Check size={19} strokeWidth={3}/> : i+1}</span><b>{label}</b></li>)}</ol>
     {step === 0 && <>
       <div className="exit-scanner"><div className="exit-scanner-inner"><div className="exit-scan-art" aria-hidden="true"><ScanLine size={96} strokeWidth={1.5}/><i/></div><strong>Escáner de demostración</strong></div></div>
@@ -51,10 +56,10 @@ export function PaymentPage() {
       <p className="account-note">Importe ilustrativo por minutos. No se genera un QR de cobro real.</p>
     </>}
     {step === 2 && <section className="exit-success">
-      <div className="exit-success-mark"><Check size={67} strokeWidth={3.8}/></div><h1>Pago realizado</h1><p className="account-note">Pago de demostración</p>
-      {paid ? <><div className="account-detail success-detail"><div><Coins size={22}/><span>Importe</span><strong>Bs {money(paid.amount)}</strong></div><div><CalendarDays size={21}/><span>Fecha</span><b>{paymentDate(paid.date)}</b></div><div><Ticket size={21}/><span>Ticket</span><b>{paid.ticket}</b></div><div><ReceiptText size={21}/><span>Comprobante</span><b className="account-paid"><Check size={15}/>Guardado en el historial</b></div></div><Button asChild className="account-primary w-full"><Link to={`/perfil/pagos?ticket=${encodeURIComponent(paid.ticket)}`}><ReceiptText size={22}/>Ver comprobante<ArrowRight size={20}/></Link></Button></> : <p className="account-note">El ticket figura pagado pero no hay un comprobante local disponible.</p>}
+      <div className="exit-success-art" aria-hidden="true"><div className="exit-success-mark"><Check size={67} strokeWidth={3.8}/></div><span className="exit-success-rays"><i/><i/><i/></span></div><h1 ref={titleRef} tabIndex={-1}>Pago realizado</h1>
+      {paid ? <><div className="account-detail success-detail"><div><Coins size={22}/><span>Importe</span><strong>Bs {money(paid.amount)}</strong></div><div><CalendarDays size={21}/><span>Fecha</span><b>{paymentDate(paid.date)}</b></div><div><Ticket size={21}/><span className="success-ticket-label">Ticket<small>{paid.ticket}</small></span><b className="account-paid"><Check size={15}/>Guardado en el historial</b></div></div><Button asChild className="account-primary w-full"><Link to={`/perfil/pagos?ticket=${encodeURIComponent(paid.ticket)}`}><ReceiptText size={22}/>Ver comprobante<ArrowRight size={20}/></Link></Button></> : <p className="account-note">El ticket figura pagado pero no hay un comprobante local disponible.</p>}
       <Button asChild variant="outline" className="account-secondary w-full"><Link to="/"><House size={21}/>Volver al inicio</Link></Button>
-      <p className="account-note">No se efectuó un cobro real ni se abrió una barrera.</p>
+      <p className="account-note">Pago de prueba · Sin cobro real ni apertura de barrera.</p>
     </section>}
     {error && <p className="form-error" role="alert">{error}</p>}
   </div>

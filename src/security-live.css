@@ -214,3 +214,31 @@
   .security-live-choices-heading>span{font-size:10px}
   .security-live-heading>div>p{font-size:10px}
 }
+
+/* Refinamiento visual: mismo fondo, menta y azul de Inicio y Pagos. */
+.workspace:has(.security-live){min-height:100vh;background:radial-gradient(ellipse 70% 50% at 100% 8%,#009b8a25,transparent 75%),radial-gradient(ellipse 60% 50% at 0% 0%,#05598129,transparent 80%),linear-gradient(160deg,#07141d,#08111a 48%,#061b1d)}
+.security-live{font-family:'Manrope Variable',sans-serif;gap:14px}
+.security-live-card{background:linear-gradient(145deg,#0c343e,#092630);border-color:#3b827f;padding:12px}
+.security-live-meta{padding:0 3px 11px}.security-live-camera-icon{background:#194b59;color:#a2f5d7}
+.security-live-meta strong{font-size:16px}.security-live-meta small{color:#aac7cc}
+.security-live-meta .security-live-indicator{margin-left:auto;padding:7px 10px;border:1px solid #42636d;border-radius:30px;background:#12333d;font-size:11px}
+.security-live-meta .security-live-indicator.is-online{color:#a1f5d5;border-color:#377c6d;background:#144940}
+.security-live-stage{border-color:#35646b;background:#041219;min-height:0;aspect-ratio:16/9}
+.security-live-toolbar{justify-content:space-between}.security-live-mode{font-size:10px!important;letter-spacing:.12em;color:#9bbac1!important}
+.security-live-toolbar button{width:44px;height:42px;padding:0;border-color:#3d6a73;background:#10313b;color:#d7f4ee}
+.security-live-toolbar button:hover{background:#194d54;border-color:#73dcc3}
+.security-live-choices-heading{margin:3px 0 -4px}.security-live-choices-heading h2{font-size:18px}
+.security-live-choice{background:linear-gradient(140deg,#0b343e,#092630);border-color:#34616c}
+.security-live-choice.is-selected{background:linear-gradient(140deg,#104c48,#0a343d);border-color:#82f0cd}
+.security-live-choice-caption strong{font-size:14px}.security-live-choice-caption small{font-size:11px;color:#b2cdd0}
+.security-live-choice-caption small span{padding:0 2px}
+.security-live-note{font-size:10px;color:#9bb9be}
+@media(max-width:760px){
+ .workspace:has(.security-live)>.topbar.topbar-security{padding:0 18px;height:72px;min-height:72px}
+ .workspace:has(.security-live) .notification-button,.workspace:has(.security-live) .quick-profile-trigger{width:41px;height:41px;background:#163c3b;border-color:#48716b}
+ .workspace:has(.security-live) .main-content{padding:12px 18px calc(92px + env(safe-area-inset-bottom))}
+ .security-live-heading{display:none}.security-live-card{padding:9px;border-radius:19px}.security-live-stage{aspect-ratio:16/10;min-height:0}
+ .security-live-meta strong{font-size:14px}.security-live-meta small{font-size:11px}
+ .security-live-choices-heading h2{font-size:17px}.security-live-choice-caption strong{font-size:13px}.security-live-choice-caption small{font-size:10px}
+}
+@media(max-width:370px){.workspace:has(.security-live) .main-content{padding-inline:13px}.security-live-choice-caption small{font-size:9px}}

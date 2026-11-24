@@ -64,3 +64,54 @@
 }
 @media(max-width:370px){.workspace:has(.account-v2) .main-content{padding-inline:13px}.exit-history-card{grid-template-columns:33px minmax(0,1fr) auto;gap:7px}.exit-history-card>.history-icon{width:33px;height:36px}.exit-history-card>svg:last-child{display:none}.history-info small{font-size:9px}.history-amount>strong{font-size:14px}.history-switch>*{font-size:12px;gap:6px}.exit-total strong{font-size:34px}.exit-gate{width:78px}.exit-steps li:not(:last-child)::after{margin-left:0}}
 @media(prefers-reduced-motion:reduce){.exit-success-mark,.exit-scan-art i{animation:none}}
+
+/* Confirmación centrada, compacta y alineada con la referencia. */
+.exit-payment h1:focus{outline:0}
+.exit-success{gap:14px}
+.exit-success-art{position:relative;width:170px;height:162px;display:grid;place-items:center;margin:0 auto}
+.exit-success-mark{width:120px;height:120px;margin:0;box-shadow:0 0 0 13px #0bd8a224,0 0 0 25px #0bd8a213,0 0 38px #0cdaa044}
+.exit-success-rays{position:absolute;right:-6px;top:4px;width:52px;height:55px;pointer-events:none;animation:paid-rays .5s .18s both}
+.exit-success-rays i{position:absolute;height:5px;width:25px;border-radius:8px;background:#8cf5d4;transform-origin:center}
+.exit-success-rays i:nth-child(1){top:5px;left:0;transform:rotate(-66deg)}
+.exit-success-rays i:nth-child(2){top:20px;left:17px;transform:rotate(-34deg)}
+.exit-success-rays i:nth-child(3){top:40px;left:25px}
+@keyframes paid-rays{from{opacity:0;scale:.65}to{opacity:1;scale:1}}
+.exit-success h1{margin:0 0 8px}
+.success-ticket-label small{display:block;font-size:10px;color:#a7bfc5;margin-top:3px}
+.exit-payment-complete .success-detail{margin-bottom:5px}
+.exit-payment-complete .success-detail>div{min-height:53px}
+.exit-payment-complete .account-paid{border:1px solid #3a9b83;padding:6px 9px;white-space:normal}
+.exit-payment-complete .account-secondary{background:transparent}
+.exit-payment-complete .exit-steps{margin-bottom:2px}
+.payment-history .history-title{margin-top:5px}
+.payment-history .history-reservations{margin-top:7px}
+.account-profile .profile-layout{grid-template-columns:1fr;gap:20px;width:100%;max-width:680px;margin:0 auto}
+.account-profile{max-width:680px}
+.account-profile .profile-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;text-align:left;padding:17px;min-height:0;border-radius:18px}
+.account-profile .profile-card .profile-avatar{width:60px;height:60px;font-size:25px;margin:0;box-shadow:0 0 0 4px #a9f1ce0c}
+.account-profile .profile-identity{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:4px}
+.account-profile .profile-identity h2{font-size:22px;line-height:1.15}
+.account-profile .profile-role{margin:0;color:#bacdd5;font-size:11px}
+.account-profile .profile-plan{width:fit-content;margin:3px 0 0;padding:4px 8px;font-size:10px;background:#16433f;border-color:#3b796e}
+.account-profile .profile-edit{min-height:40px;width:40px;height:40px;padding:0;border-radius:12px;color:#b6f3dc;border-color:#487a76;background:#163c43}
+.account-profile .profile-settings{padding:0}
+.account-profile .profile-settings h2{font-size:19px;margin-bottom:11px}
+.account-profile .profile-history-feature{padding:13px 14px;margin-bottom:10px}
+.account-profile .profile-links{background:#0a2d36;border-color:#35606a}
+.account-profile .profile-link{padding:12px 14px;gap:12px}
+.account-profile .profile-link strong{font-size:14px;font-weight:750}
+.account-profile .profile-link small{font-size:11px;margin-top:3px;line-height:1.4;color:#abc0c9}
+.account-profile .profile-link .tile-icon{width:38px;height:38px;border-radius:11px}
+.account-profile .privacy-note{padding:12px 3px}
+@media(max-width:760px){
+ .exit-success-art{width:150px;height:140px}.exit-success-mark{width:107px;height:107px}.exit-success-mark>svg{width:57px;height:57px}
+ .exit-success-rays{right:-9px;top:0;scale:.85}
+ .exit-payment-complete .exit-success h1{font-size:clamp(29px,8vw,38px)}
+ .exit-payment-complete .success-detail>div{padding:12px 0;min-height:48px}
+ .account-profile .profile-card{padding:14px 13px;gap:11px}
+ .account-profile .profile-card .profile-avatar{width:53px;height:53px;margin:0;font-size:24px}
+ .account-profile .profile-layout{gap:17px}.account-profile .profile-identity h2{font-size:21px}
+ .account-profile .profile-history-feature strong{font-size:17px}
+}
+@media(max-width:370px){.account-profile .profile-role{font-size:10px}.account-profile .profile-edit{width:36px;min-height:36px;height:36px}.exit-payment-complete .account-paid{font-size:9px;padding:5px 6px}.exit-payment-complete .success-detail>div{gap:7px}}
+@media(prefers-reduced-motion:reduce){.exit-success-rays{animation:none}}
