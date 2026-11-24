@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
+import { useRef, useState, type FormEvent, type TouchEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/auth-context'
-import { Check, Clock3, Plus, X } from 'lucide-react'
+import { Check, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
 import { money, localDate, tomorrow } from '@/lib/utils'
 import { quoteParking } from '@/lib/pricing'
-import { useSpaceHold } from '@/hooks/use-space-hold'
 import { carDirection } from '@/lib/car-direction'
 
 const DEMO_RATE_BS=15 // Tarifa inicial de feria; lectura dinámica pendiente.
@@ -32,10 +31,8 @@ export function SpacesPage() {
   const { spaces, statusOf, stats, confirmed, isDemo, isLiveOccupancy, reservations, book, setNotice } = useParkingStore()
   const {user}=useAuth()
   const navigate=useNavigate()
-  const { take, release, remaining, ownerOf } = useSpaceHold()
   const [selected, setSelected] = useState<SpaceCode | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
-  const [heldSelection, setHeldSelection] = useState(false)
   const [date, setDate] = useState(tomorrow)
   const [from, setFrom] = useState('09:00')
   const [to, setTo] = useState('11:00')
@@ -44,36 +41,15 @@ export function SpacesPage() {
 
   const space = selected ? spaces.find(item => item.id === selected) : undefined
   const status = space ? statusOf(space) : 'unknown'
-  const myHold = selected ? ownerOf(selected) === 'me' : false
-  const remainingSeconds = remaining(selected)
-  const canReserve = !!(space && status === 'free' && confirmed && myHold && remainingSeconds > 0)
+  const canReserve = !!(space && status === 'free' && confirmed && user)
   const input = selected ? { space: selected, date, from, to } : null
   const quote = quoteParking(date, from, to, DEMO_RATE_BS)
   const validation = canReserve && input
     ? validateBooking(input, spaces, reservations, new Date(), isLiveOccupancy)
     : null
 
-  useEffect(() => {
-    if (selected && heldSelection && remainingSeconds === 0) {
-      setSelected(null)
-      setHeldSelection(false)
-      setModalOpen(false)
-    }
-  }, [selected, heldSelection, remainingSeconds])
-
-  useEffect(() => {
-    if (selected && heldSelection && status !== 'free') {
-      release(selected)
-      setSelected(null)
-      setHeldSelection(false)
-      setModalOpen(false)
-    }
-  }, [selected, heldSelection, status]) // El estado físico tiene prioridad sobre una selección provisional.
-
   function closeSheet() {
-    if (selected && heldSelection) release(selected)
     setSelected(null)
-    setHeldSelection(false)
     setModalOpen(false)
     setError('')
   }
@@ -84,10 +60,8 @@ export function SpacesPage() {
     const actualStatus = statusOf(item)
     const available = actualStatus === 'free' && confirmed
     if(available&&!user){navigate('/login?next=%2Fespacios');return}
-    const holdTaken = available ? take(code) : false
 
     setSelected(code)
-    setHeldSelection(holdTaken)
     setModalOpen(true)
     setError('')
     setDate(tomorrow())
@@ -134,12 +108,12 @@ export function SpacesPage() {
     if (distance > 85) closeSheet()
   }
 
-  const firstFree = confirmed ? spaces.find(entry => statusOf(entry) === 'free' && !ownerOf(entry.id)) : undefined
+  const firstFree = confirmed ? spaces.find(entry => statusOf(entry) === 'free') : undefined
 
   const selectMessage = status === 'occupied' ? 'Plaza ocupada' :
     status === 'reserved' ? 'Plaza reservada' :
     status === 'unknown' || !confirmed ? 'Plaza bloqueada' :
-    !myHold ? (selected && ownerOf(selected) === 'other' ? 'Otro usuario está seleccionando esta plaza' : 'Vuelve a tocar la plaza para seleccionarla') : ''
+    ''
 
   return <section className="parking-v2" aria-label="Estacionamientos de la maqueta">
     <div className="parking-v2-heading">
@@ -156,10 +130,9 @@ export function SpacesPage() {
           if (!id) return <div key="zona" className="parking-v2-hatch" style={{gridColumn: 3, gridRow: 4}} aria-hidden="true"><i/><i/><i/><i/></div>
           const item = spaces.find(entry => entry.id === id)!
           const itemStatus = statusOf(item)
-          const holder = ownerOf(id)
-          const selecting = itemStatus === 'free' && holder !== null
+          const selecting = itemStatus === 'free' && selected === id
           const locked = itemStatus === 'unknown' || itemStatus === 'reserved'
-          const displayed = selecting ? holder === 'me' ? 'Seleccionado' : 'Seleccionando' :
+          const displayed = selecting ? 'Seleccionado' :
             locked ? itemStatus === 'reserved' ? 'Reservado' : 'Bloqueado' : statusLabels[itemStatus]
           return <button
             type="button"
@@ -177,7 +150,6 @@ export function SpacesPage() {
                 <Plus size={26}/>}
             </span>
             {!locked && itemStatus !== 'occupied' && <span className="parking-v2-status">{displayed}</span>}
-            {selecting && <span className="parking-v2-timer">{remaining(id)} s</span>}
           </button>
         })}
       </div>
@@ -199,7 +171,7 @@ export function SpacesPage() {
       {space && (canReserve ? <form className="parking-v2-form" onSubmit={submitBooking}>
         <div className="parking-v2-progress">
           <span><Check size={14}/>Seleccionado</span>
-          <span><Clock3 size={14}/>{remainingSeconds} s para reservar</span>
+          <span>Servicio de reservas pendiente</span>
         </div>
         <div className="parking-v2-fields">
           <label htmlFor="parking-v2-date">Fecha</label>

@@ -30,3 +30,5 @@
 .auth-balance{display:flex;flex-direction:column;gap:10px;border:1px solid #65dcb6;border-radius:22px;padding:23px;background:linear-gradient(135deg,#124d43,#07302f);color:#a1f5d5}.auth-balance strong{font-size:36px;font-weight:850}
 @media(max-width:370px){.auth-shell{padding:19px}.auth-inner{gap:15px}.auth-art{min-height:195px}.auth-art img{height:160px}.auth-form{gap:10px}}
 @media(prefers-reduced-motion:reduce){.auth-loading-line:before{animation:none}}
+
+.app-shell:has(.auth-splash) .sidebar,.app-shell:has(.auth-splash) .topbar,.app-shell:has(.auth-splash) .bottom-nav,.app-shell:has(.auth-splash) .page-footer{visibility:hidden}

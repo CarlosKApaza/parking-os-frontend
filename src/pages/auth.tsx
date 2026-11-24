@@ -8,12 +8,13 @@ function Brand(){return <div className="auth-brand"><span className="brand-icon"
 function nextPath(search:string){const value=new URLSearchParams(search).get('next');return value&&/^\/(?![\/\\])/.test(value)&&!/[\\\r\n]/.test(value)?value:'/'}
 export function RequireAuth({children}:{children:ReactNode}){const {user}=useAuth();const location=useLocation();return user?children:<Navigate replace to={'/login?next='+encodeURIComponent(location.pathname+location.search)}/>}
 export function InitialHome({children}:{children:ReactNode}){
-  const [first]=useState(()=>{try{return sessionStorage.getItem('parkingos:welcome:v1')!=='1'}catch{return false}})
+  const {user}=useAuth()
+  const [first]=useState(()=>{try{return !user&&sessionStorage.getItem('parkingos:welcome:v1')!=='1'}catch{return false}})
   const navigate=useNavigate()
   useEffect(()=>{if(!first)return;const timer=window.setTimeout(()=>{try{sessionStorage.setItem('parkingos:welcome:v1','1')}catch{}navigate('/bienvenida',{replace:true})},750);return()=>window.clearTimeout(timer)},[first,navigate])
   return first?<div className="auth-splash"><Brand/><p>Estacionamiento inteligente</p><span className="auth-loading-line"/></div>:children
 }
-export function WelcomePage(){return <div className="auth-shell auth-welcome"><div className="auth-inner"><Brand/><div className="auth-art"><span className="auth-parking-outline"/><ParkingSquare className="auth-art-icon" size={44}/><img src="/parking-space-sedan-v2.webp" alt="Automóvil en una plaza"/></div><div className="auth-welcome-copy"><h1>Tu espacio,<br/><span>sin dar vueltas.</span></h1><p>Consulta, reserva y paga desde un solo lugar.</p></div><Link className="auth-primary" to="/login">Comenzar <ArrowRight size={20}/></Link><Link className="auth-text-link" to="/">Continuar como invitado</Link></div></div>}
+export function WelcomePage(){useEffect(()=>{try{sessionStorage.setItem('parkingos:welcome:v1','1')}catch{}},[]);return <div className="auth-shell auth-welcome"><div className="auth-inner"><Brand/><div className="auth-art"><span className="auth-parking-outline"/><ParkingSquare className="auth-art-icon" size={44}/><img src="/parking-space-sedan-v2.webp" alt="Automóvil en una plaza"/></div><div className="auth-welcome-copy"><h1>Tu espacio,<br/><span>sin dar vueltas.</span></h1><p>Consulta, reserva y paga desde un solo lugar.</p></div><Link className="auth-primary" to="/login">Comenzar <ArrowRight size={20}/></Link><Link className="auth-text-link" to="/">Continuar como invitado</Link></div></div>}
 export function AuthPage({register=false}:{register?:boolean}){
   const auth=useAuth(),location=useLocation(),navigate=useNavigate()
   const next=nextPath(location.search)
@@ -22,7 +23,7 @@ export function AuthPage({register=false}:{register?:boolean}){
   async function submit(e:FormEvent){e.preventDefault();if(busy)return;setError('')
     if(register&&password!==confirm){setError('Las contraseñas no coinciden.');return}
     setBusy(true)
-    try{if(register){await accountRequest('/auth/registro',{method:'POST',body:{nombre:name,correo,password}})}await auth.login(correo,password);navigate(next,{replace:true})}
+    try{if(register){await accountRequest('/auth/registro',{method:'POST',body:{nombre:name,correo,password}})}await auth.login(correo,password);try{sessionStorage.setItem('parkingos:welcome:v1','1')}catch{}navigate(next,{replace:true})}
     catch(e){setError(e instanceof Error?e.message:'No se pudo iniciar sesión.')}finally{setBusy(false)}
   }
   return <div className="auth-shell"><div className="auth-inner auth-form-inner"><Link to="/" className="auth-back"><ArrowLeft size={19}/>Inicio</Link><Brand/><div className="auth-heading"><h1>{register?'Crear cuenta':'Iniciar sesión'}</h1><p>{register?'Empieza a utilizar Parking OS.':'Accede a tu cuenta para gestionar tu estacionamiento.'}</p></div>
