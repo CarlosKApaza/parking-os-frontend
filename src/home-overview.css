@@ -144,3 +144,52 @@
 
 /* En Inicio ya solo queda la guía; debe ocupar todo el ancho disponible. */
 .home-overview-details{grid-template-columns:minmax(0,1fr)}
+
+/* Inicio orientado al conductor: 3 acciones directas, tarifa y reserva activa (demo). */
+.home-overview-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.home-overview-action{
+  position:relative;display:flex;flex-direction:column;align-items:flex-start;
+  gap:8px;min-width:0;min-height:164px;
+  padding:19px 20px;background:#1d2528;border:1px solid #384346;
+  border-radius:18px;color:#e6eeef;
+  transition:background .2s,border-color .2s,transform .2s;
+}
+.home-overview-action.primary{background:#263d34;border-color:#476b58}
+.home-overview-action:hover{border-color:#8bbfa8;background:#293a34;transform:translateY(-2px)}
+.home-overview-action-icon{display:grid;place-items:center;width:42px;height:42px;background:#354d43;border-radius:12px;color:#b8efd1;margin-bottom:4px}
+.home-overview-action:not(.primary) .home-overview-action-icon{background:#2c393d;color:#c4d8dd}
+.home-overview-action strong{font-size:15px;font-weight:800;letter-spacing:-.025em}
+.home-overview-action small{font-size:11px;color:#a8baba;line-height:1.5;max-width:260px;padding-right:17px}
+.home-overview-action-arrow{position:absolute;right:18px;bottom:18px;color:#bcead3}
+.home-overview-extras{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.home-overview-rate,.home-overview-mybooking{
+  display:flex;align-items:center;gap:14px;min-width:0;
+  padding:18px 22px;border-radius:16px;border:1px solid #35423e;
+  background:#1c2324;
+}
+.home-overview-rate-icon{display:grid;place-items:center;width:39px;height:39px;border-radius:12px;
+  background:#2d4038;color:#afe9ca;flex:none}
+.home-overview-rate>div,.home-overview-mybooking>span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.home-overview-rate>div>strong,.home-overview-mybooking>span>strong{font-size:12px;font-weight:800;color:#e5eeed}
+.home-overview-rate>div>small,.home-overview-mybooking>span>small{font-size:11px;color:#9babaa}
+.home-overview-rate>b{font-size:24px;letter-spacing:-.05em;color:#b1eed0;margin-left:auto;white-space:nowrap}
+.home-overview-rate>b>small{font-size:11px;color:#a9bab6;letter-spacing:0;margin-left:3px}
+.home-overview-mybooking{border-color:#415a6a;background:#1e2a31}
+.home-overview-mybooking>svg{color:#bbd4df;flex:none}
+.home-overview-mybooking>svg:last-child{margin-left:auto}
+@media(max-width:760px){
+  .home-overview-actions{gap:8px;grid-template-columns:1fr 1fr}
+  .home-overview-action{min-height:143px;padding:14px 13px;gap:6px;border-radius:15px}
+  .home-overview-action.primary{grid-column:1/-1;min-height:112px;padding:14px 17px 14px 72px;justify-content:center}
+  .home-overview-action.primary .home-overview-action-icon{position:absolute;left:16px;top:21px}
+  .home-overview-action-icon{width:37px;height:37px;border-radius:11px;margin-bottom:1px}
+  .home-overview-action strong{font-size:12px}
+  .home-overview-action small{font-size:10px;line-height:1.4;padding-right:10px}
+  .home-overview-action-arrow{width:16px;height:16px;bottom:12px;right:12px}
+  .home-overview-rate,.home-overview-mybooking{padding:13px 15px;border-radius:14px;gap:9px}
+  .home-overview-rate-icon{width:35px;height:35px;border-radius:10px}
+  .home-overview-rate>div>strong,.home-overview-mybooking>span>strong{font-size:11px}
+  .home-overview-rate>div>small,.home-overview-mybooking>span>small{font-size:9px;line-height:1.4}
+  .home-overview-rate>b{font-size:19px}
+  .home-overview-rate>b>small{font-size:9px}
+}
