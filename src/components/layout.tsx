@@ -77,7 +77,7 @@ export function Layout() {
         </div>
       </div>
     </div>
-      {location.pathname === '/seguridad' && <div className="topbar-security-summary"><MapPin size={15}/><span>Maqueta física</span><span aria-hidden="true">·</span><span>Zona de acceso</span></div>}
+      {location.pathname === '/seguridad' && <span className="topbar-security-title">Seguridad</span>}
       {location.pathname === '/espacios' && <div className="topbar-spaces-summary">
         <span className="topbar-spaces-place"><MapPin size={15}/>Maqueta física <span aria-hidden="true">·</span> Planta única</span>
         <span className="topbar-spaces-free"><strong>{String(stats.free).padStart(2, '0')}</strong> libres</span>
