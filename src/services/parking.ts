@@ -5,8 +5,14 @@ export const isDemo = import.meta.env.VITE_DATA_MODE !== 'live'
 export const isLiveOccupancy = (import.meta.env.VITE_OCCUPANCY_MODE ?? (isDemo ? 'demo' : 'live')) === 'live'
 const apiUrl = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 // Mismo origen por defecto: Vite reenvía el upgrade WebSocket a NestJS.
+export function resolveSocketOrigin(configured:string,pageOrigin:string):string {
+  const page=new URL(pageOrigin),target=new URL(configured||pageOrigin,pageOrigin)
+  const loopback=(host:string)=>['localhost','127.0.0.1','[::1]','0.0.0.0'].includes(host)
+  // En un móvil, localhost apunta al propio teléfono, nunca al PC que ejecuta Vite.
+  return loopback(target.hostname)&&!loopback(page.hostname)?page.origin:target.origin
+}
 export function parkingSocketUrl(): string {
-  return new URL(import.meta.env.VITE_SOCKET_URL || apiUrl || window.location.origin, window.location.origin).origin
+  return resolveSocketOrigin(import.meta.env.VITE_SOCKET_URL || apiUrl,window.location.origin)
 }
 export const pollingIntervalMs = Math.max(1000, Number(import.meta.env.VITE_POLL_INTERVAL_MS) || 3000)
 const staleAfterMs = Math.max(60000, Number(import.meta.env.VITE_STALE_AFTER_MS) || 90000)

@@ -32,6 +32,7 @@ export function useParking() {
       timeout: 5000,
     })
 
+    setSocketConnected(false)
     setSpaces(current)
     setConnection('connecting')
     setMessage('Consultando disponibilidad real…')
@@ -90,6 +91,7 @@ export function useParking() {
     function onConnect() {
       if (disposed) return
       setSocketConnected(true);setReservationRevision(n=>n+1)
+      if(import.meta.env.DEV)console.info('[Parking OS] Socket.IO conectado',socket.id,parkingSocketUrl())
       ready = false
       pending.clear()
       setConnection('connecting')
@@ -105,13 +107,19 @@ export function useParking() {
       setMessage('Recuperando disponibilidad por REST…')
       void sync(true)
     }
-    function onConnectError() {
+    function onConnectError(error:Error) {
       if (disposed) return
+      setSocketConnected(false)
+      if(import.meta.env.DEV)console.warn('[Parking OS] Socket.IO:',error.message)
       if (ready) status()
       else void sync()
     }
 
-    const onReservation=()=>{if(!disposed)setReservationRevision(n=>n+1)}
+    const onReservation=()=>{if(!disposed){if(import.meta.env.DEV)console.info('[Parking OS] WS reservas.actualizadas');setReservationRevision(n=>n+1)}}
+    const resume=()=>{if(disposed||document.visibilityState==='hidden')return;if(!socket.connected)socket.connect();setReservationRevision(n=>n+1);void sync(true)}
+    document.addEventListener('visibilitychange',resume)
+    window.addEventListener('online',resume)
+    window.addEventListener('pageshow',resume)
     socket.on('reservas.actualizadas',onReservation)
     socket.on(EVENT, onReading)
     socket.on('connect', onConnect)
@@ -136,6 +144,9 @@ export function useParking() {
       window.clearInterval(fallback)
       window.clearInterval(freshness)
       controller?.abort()
+      document.removeEventListener('visibilitychange',resume)
+      window.removeEventListener('online',resume)
+      window.removeEventListener('pageshow',resume)
       socket.off('reservas.actualizadas',onReservation)
       socket.off(EVENT, onReading)
       socket.off('connect', onConnect)

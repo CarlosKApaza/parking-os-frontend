@@ -43,8 +43,8 @@ export function SpacesPage() {
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;operation.current++;if(currentHold.current)releaseRef.current(currentHold.current.token)}},[])
   useEffect(()=>{
     if(!hold)return
-    const deadline=Date.parse(hold.venceEn),offset=Date.parse(hold.servidorAhora)-Date.now()
-    const tick=()=>{const left=Math.max(0,Math.ceil((deadline-Date.now()-offset)/1000));setRemaining(left);if(left===0){currentHold.current=null;setHold(null);setError('La selección venció. Vuelve a elegir la plaza.');booking.reload()}}
+    const duration=Math.max(0,Date.parse(hold.venceEn)-Date.parse(hold.servidorAhora)),started=performance.now()
+    const tick=()=>{const left=Math.max(0,Math.ceil((duration-(performance.now()-started))/1000));setRemaining(left);if(left===0){currentHold.current=null;setHold(null);setError('La selección venció. Vuelve a elegir la plaza.');booking.reload()}}
     tick();const timer=window.setInterval(tick,250);return()=>window.clearInterval(timer)
   },[hold])
   const space=selected?spaces.find(s=>s.id===selected):undefined
@@ -52,8 +52,8 @@ export function SpacesPage() {
   const canReserve=!!(hold&&remaining>0&&space?.occupancy==='FREE'&&confirmed&&user&&booking.ready)
   const dates=interval(date,from,to),minutes=(Date.parse(dates.fechaFin)-Date.parse(dates.fechaInicio))/60000
   const total=Number.isFinite(minutes)&&minutes>0?minutes*DEMO_RATE_BS/60:0
-  const validation=Date.parse(dates.fechaInicio)<=Date.now()||!Number.isFinite(minutes)||minutes<=0?'Elige un horario futuro y válido.':booking.snapshot?.reservas.some(r=>r.plaza===selected&&overlap(dates.fechaInicio,dates.fechaFin,r.fechaInicio,r.fechaFin))?'La plaza ya está reservada en ese horario.':null
-  const publicHold=(code:SpaceCode)=>booking.snapshot?.retenciones.find(h=>h.plaza===code&&Date.parse(h.venceEn)>Date.now())
+  const validation=Date.parse(dates.fechaInicio)<=booking.serverNow||!Number.isFinite(minutes)||minutes<=0?'Elige un horario futuro y válido.':booking.snapshot?.reservas.some(r=>r.plaza===selected&&overlap(dates.fechaInicio,dates.fechaFin,r.fechaInicio,r.fechaFin))?'La plaza ya está reservada en ese horario.':null
+  const publicHold=booking.publicHold
   function closeSheet(){
     if(busy)return
     operation.current++
@@ -115,7 +115,7 @@ export function SpacesPage() {
   return <section className="parking-v2" aria-label="Estacionamientos de la maqueta">
     <div className="parking-v2-heading">
       <h1 className="parking-v2-page-title">Espacios</h1>
-      <div className="parking-v2-availability" aria-live="polite"><strong>{String(stats.free).padStart(2, '0')}</strong><span>libres</span></div>
+      <div className="parking-v2-availability" aria-live="polite" title={booking.socketConnected?'WebSocket conectado':'Sin WebSocket · sincronización REST'}><strong>{String(stats.free).padStart(2, '0')}</strong><span>libres</span></div>
     </div>
 
     <div className="parking-v2-map">
@@ -163,7 +163,7 @@ export function SpacesPage() {
         <strong>Bs {money(DEMO_RATE_BS)}</strong>
       </div>
       <button type="button" onClick={() => { if (firstFree) chooseSpace(firstFree.id) }} disabled={!firstFree}>
-        {firstFree ? 'Reservar plaza' : 'Sin plazas libres'}
+        {!booking.ready?'Sin confirmar':firstFree ? 'Reservar plaza' : 'Sin plazas libres'}
       </button>
     </div>
     <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}

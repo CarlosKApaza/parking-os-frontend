@@ -49,10 +49,10 @@ function useStore() {
   const statusOf = (space: Space) => {
     const physical=displayStatus(space,[],now)
     if(physical!=='free')return physical
-    return booking.snapshot?.reservas.some(r=>r.plaza===space.id&&Date.parse(r.fechaFin)>Date.now())?'reserved':physical
+    return booking.snapshot?.reservas.some(r=>r.plaza===space.id&&Date.parse(r.fechaFin)>booking.serverNow)?'reserved':physical
   }
   const stats = { free: 0, occupied: 0, reserved: 0, unknown: 0 }
-  spaces.forEach(s => {const status=statusOf(s);stats[status==='free'&&booking.snapshot?.retenciones.some(h=>h.plaza===s.id&&Date.parse(h.venceEn)>Date.now())?'reserved':status]++})
+  spaces.forEach(s => {const status=statusOf(s);stats[status==='free'&&booking.publicHold(s.id)?'reserved':status]++})
   function book(input: BookingInput) {
     const error = validateBooking(input, spaces, current.current.reservations, new Date(), isDemo && isLiveOccupancy)
     if (error) throw new Error(error)

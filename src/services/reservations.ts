@@ -12,3 +12,11 @@ export function toReservation(r:RemoteReservation):Reservation{
 }
 export function interval(date:string,from:string,to:string){return {fechaInicio:date+'T'+from+':00-04:00',fechaFin:date+'T'+to+':00-04:00'}}
 export function overlap(a:string,b:string,c:string,d:string){return Date.parse(a)<Date.parse(d)&&Date.parse(b)>Date.parse(c)}
+
+/** El servidor decide la vigencia. El reloj del teléfono puede estar adelantado. */
+export function serverTimeAt(serverIso:string,receivedAt:number,monotonicNow:number):number{
+  return Date.parse(serverIso)+Math.max(0,monotonicNow-receivedAt)
+}
+export function activePublicHold(snapshot:Availability|null,code:SpaceCode,serverNow:number){
+  return snapshot?.retenciones.find(h=>h.plaza===code&&Date.parse(h.venceEn)>serverNow)
+}
