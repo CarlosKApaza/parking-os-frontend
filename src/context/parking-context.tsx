@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createDemo, demoSchema, displayStatus, payDemoTicket, reservationStatus, spaceCodes, validateBooking, type BookingInput, type DemoState, type Space } from '@/lib/model'
-import { isDemo, isLiveOccupancy, unknownSpaces } from '@/services/parking'
+import { isLiveOccupancy, unknownSpaces } from '@/services/parking'
 import { useParking } from '@/hooks/use-parking'
 
+// El modo de cuentas no utiliza saldos, pagos ni reservas locales compartidos.
+const isDemo = false
 const STORAGE_KEY = 'parkingos:demo:v1'
 function loadDemo() {
   try { const parsed = demoSchema.safeParse(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')); if (parsed.success) return parsed.data } catch { /* El modo privado puede bloquear almacenamiento. */ }

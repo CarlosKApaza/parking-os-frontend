@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent, type TouchEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/auth-context'
 import { Check, Clock3, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels, validateBooking } from '@/lib/model'
 import { money, localDate, tomorrow } from '@/lib/utils'
-import { DEMO_RATE_BS, quoteParking } from '@/lib/pricing'
+import { quoteParking } from '@/lib/pricing'
 import { useSpaceHold } from '@/hooks/use-space-hold'
 import { carDirection } from '@/lib/car-direction'
 
+const DEMO_RATE_BS=15 // Tarifa inicial de feria; lectura dinámica pendiente.
 const order: (SpaceCode | null)[] = ['P1', 'P5', 'P2', 'P6', 'P3', 'P7', 'P4', null]
 
 /** Candado blanco sólido, con hueco de llave oscuro sobre fondos teal. */
@@ -27,6 +30,8 @@ function SolidLock({ size = 27 }: { size?: number }) {
 
 export function SpacesPage() {
   const { spaces, statusOf, stats, confirmed, isDemo, isLiveOccupancy, reservations, book, setNotice } = useParkingStore()
+  const {user}=useAuth()
+  const navigate=useNavigate()
   const { take, release, remaining, ownerOf } = useSpaceHold()
   const [selected, setSelected] = useState<SpaceCode | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -43,7 +48,7 @@ export function SpacesPage() {
   const remainingSeconds = remaining(selected)
   const canReserve = !!(space && status === 'free' && confirmed && myHold && remainingSeconds > 0)
   const input = selected ? { space: selected, date, from, to } : null
-  const quote = quoteParking(date, from, to)
+  const quote = quoteParking(date, from, to, DEMO_RATE_BS)
   const validation = canReserve && input
     ? validateBooking(input, spaces, reservations, new Date(), isLiveOccupancy)
     : null
@@ -78,6 +83,7 @@ export function SpacesPage() {
     if (!item) return
     const actualStatus = statusOf(item)
     const available = actualStatus === 'free' && confirmed
+    if(available&&!user){navigate('/login?next=%2Fespacios');return}
     const holdTaken = available ? take(code) : false
 
     setSelected(code)
@@ -91,6 +97,7 @@ export function SpacesPage() {
 
   function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (!isDemo) {setError('El servicio de reservas todavía no está integrado.');return}
     if (!canReserve || !input || validation || quote.hours < 1) {
       setError(validation || 'Selecciona una plaza y un horario válidos.')
       return
@@ -185,7 +192,7 @@ export function SpacesPage() {
       </button>
     </div>
     <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}
-      title={selected ? 'Plaza ' + selected : 'Plaza'} description={selectMessage || 'Selecciona tu horario. Reserva de demostración.'}
+      title={selected ? 'Plaza ' + selected : 'Plaza'} description={selectMessage || 'Consulta el horario. El registro de reservas todavía no está integrado.'}
       contentClassName="parking-v2-sheet"
       onContentTouchStart={onTouchStart} onContentTouchMove={onTouchMove} onContentTouchEnd={onTouchEnd}
     >
@@ -206,11 +213,11 @@ export function SpacesPage() {
         {error && <p className="parking-v2-error" role="alert">{error}</p>}
         <div className="parking-v2-price">
           <div className="parking-v2-price-text">
-            <span>Total estimado · {quote.hours} h</span>
+            <span>Estimación por hora · {quote.hours} h</span>
             <strong>Bs {money(quote.total)}</strong>
             <small>Tarifa demo: Bs {money(DEMO_RATE_BS)}/h</small>
           </div>
-          <button type="submit" disabled={!!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
+          <button type="submit" disabled={!isDemo || !!validation || quote.hours === 0}>Reservar <Check size={17}/></button>
         </div>
       </form> : <div className="parking-v2-disabled">
         <div className="parking-v2-disabled-icon">{status === 'occupied' ? <img src="/parking-space-sedan-v2.webp" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(selected!)} alt="" draggable={false} /> : <SolidLock size={31}/>}</div>

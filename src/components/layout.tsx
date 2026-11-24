@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowUpRight, Bell, CalendarDays, CarFront, Check, ChevronRight, CircleParking, CreditCard, Download, Home, MapPin, ParkingSquare, ScanLine, ShieldCheck, UserRound, Wallet, X } from 'lucide-react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { useAuth } from '@/context/auth-context'
 import { useParkingStore } from '@/context/parking-context'
 import { useInstall } from '@/hooks/use-install'
 import { ConnectionBanner } from './shared'
@@ -11,7 +12,8 @@ import { Modal } from './ui/dialog'
 
 const navigation = [{ to: '/', label: 'Inicio', Icon: Home }, { to: '/espacios', label: 'Espacios', Icon: ParkingSquare }, { to: '/pago', label: 'Pagar', Icon: ScanLine }, { to: '/seguridad', label: 'Seguridad', Icon: ShieldCheck }, { to: '/perfil', label: 'Perfil', Icon: UserRound }]
 export function Layout() {
-  const { demo, isDemo, isLiveOccupancy, notice, setNotice, reservations, stats } = useParkingStore()
+  const { isDemo, isLiveOccupancy, notice, setNotice, reservations, stats } = useParkingStore()
+  const {user}=useAuth()
   const [openMenu, setOpenMenu] = useState<'notifications' | 'profile' | null>(null)
   const quickActionsRef = useRef<HTMLDivElement>(null)
   const [installHelp, setInstallHelp] = useState(false)
@@ -36,7 +38,7 @@ export function Layout() {
     }
   }, [])
   const activeCount = reservations.filter(r => r.status === 'active').length
-  const name = isDemo ? demo.name : 'Visitante'
+  const name = user?.nombre ?? 'Visitante'
   const currentLabel = navigation.find(n => n.to === location.pathname)?.label ?? ({ '/perfil/pagos': 'Historial de pagos', '/reservas': 'Mis reservas', '/billetera': 'Billetera', '/pago': 'Pago de salida', '/vehiculos': 'Mis vehículos', '/reservar': 'Nueva reserva' }[location.pathname] || 'Parking OS')
   const profileSection = ['/perfil', '/perfil/pagos', '/reservas', '/vehiculos', '/billetera', '/reservar'].includes(location.pathname)
   const installClick = () => install.canInstall ? void install.install() : setInstallHelp(true)
@@ -49,7 +51,7 @@ export function Layout() {
       <div className="sidebar-section-label secondary-label">MI CUENTA</div>
       <NavLink to="/billetera" aria-label="Billetera" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><Wallet size={20}/><span>Billetera</span><ArrowUpRight size={16}/></NavLink>
       <div className="sidebar-bottom"><div className="install-card"><div className="install-icon"><Download size={20}/></div><strong>Tu parking, siempre cerca.</strong><p>Instala la app y lleva tu espacio contigo.</p><button onClick={installClick} disabled={install.installed}>{install.installed ? 'Aplicación instalada' : 'Instalar Parking OS'}<ArrowUpRight size={15}/></button></div>
-      <NavLink to="/perfil" className="sidebar-profile"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{isDemo ? 'Cuenta de demostración' : 'Consulta pública'}</small></span><ChevronRight size={16}/></NavLink></div>
+      <NavLink to="/perfil" className="sidebar-profile"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{user ? 'Mi cuenta' : 'Consulta pública'}</small></span><ChevronRight size={16}/></NavLink></div>
     </aside>
     <div className="workspace"><header className={location.pathname === "/espacios" ? "topbar topbar-spaces" : location.pathname === "/seguridad" ? "topbar topbar-security" : location.pathname === "/" ? "topbar topbar-home" : "topbar"}><div className="breadcrumbs"><span>Mi estacionamiento</span><ChevronRight size={13}/><strong>{currentLabel}</strong></div>{location.pathname === '/seguridad' ? <span className="mobile-page-label">Seguridad</span> : <NavLink to="/" className="mobile-brand"><span className="brand-icon">P<span>•</span></span><b>parking<span>os</span></b></NavLink>}<div className="topbar-actions">
       <span className="location-label"><MapPin size={15}/>Estacionamiento principal</span>
@@ -67,7 +69,7 @@ export function Layout() {
         <div className="quick-menu-anchor">
           <button className="avatar small-avatar quick-profile-trigger" aria-label="Opciones de mi cuenta" aria-expanded={openMenu === 'profile'} aria-controls="profile-panel" onClick={() => setOpenMenu(current => current === 'profile' ? null : 'profile')}>{name.slice(0, 1).toUpperCase()}</button>
           <AnimatePresence>{openMenu === 'profile' && <motion.section id="profile-panel" className="quick-menu-panel profile-panel" aria-label="Opciones de la cuenta" initial={reducedMotion ? false : { opacity: 0, y: -9, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: .97 }} transition={{ duration: .18, ease: 'easeOut' }}>
-            <div className="quick-profile-header"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{isDemo ? 'Cuenta de demostración' : 'Consulta pública'}</small></span></div>
+            <div className="quick-profile-header"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{user ? 'Mi cuenta' : 'Consulta pública'}</small></span></div>
             <nav className="quick-profile-links" aria-label="Accesos rápidos de la cuenta">
               <NavLink to="/perfil" onClick={() => setOpenMenu(null)}><UserRound size={17}/>Mi perfil<ChevronRight size={15}/></NavLink>
               <NavLink to="/perfil/pagos" onClick={() => setOpenMenu(null)}><CreditCard size={17}/>Historial de pagos<ChevronRight size={15}/></NavLink>
