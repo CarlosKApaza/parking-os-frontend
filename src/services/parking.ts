@@ -4,6 +4,10 @@ export const isDemo = import.meta.env.VITE_DATA_MODE !== 'live'
 // La ocupación física puede ser real aunque billetera, reservas y pagos sigan en demo.
 export const isLiveOccupancy = (import.meta.env.VITE_OCCUPANCY_MODE ?? (isDemo ? 'demo' : 'live')) === 'live'
 const apiUrl = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+// Mismo origen por defecto: Vite reenvía el upgrade WebSocket a NestJS.
+export function parkingSocketUrl(): string {
+  return new URL(import.meta.env.VITE_SOCKET_URL || apiUrl || window.location.origin, window.location.origin).origin
+}
 export const pollingIntervalMs = Math.max(1000, Number(import.meta.env.VITE_POLL_INTERVAL_MS) || 3000)
 const staleAfterMs = Math.max(60000, Number(import.meta.env.VITE_STALE_AFTER_MS) || 90000)
 export function unknownSpaces(): Space[] { return spaceCodes.map(id => ({ id, occupancy: 'UNKNOWN', updatedAt: '' })) }
@@ -14,13 +18,14 @@ export function parseSpace(value: unknown): Space | null {
   if (!spaceCodes.includes(code as SpaceCode)) return null
   const raw = String(row.physicalOccupancy ?? row.occupancyStatus ?? row.occupancy_status ?? row.status ?? row.estado ?? '').toUpperCase()
   const lastReading = Date.parse(String(row.ultimaLectura ?? ''))
-  const sensorIsStale = Boolean(row.sensorCodigo) && (!Number.isFinite(lastReading) || Date.now() - lastReading > staleAfterMs)
+  const staleAt = row.sensorCodigo ? (Number.isFinite(lastReading) ? lastReading + staleAfterMs : 0) : undefined
+  const sensorIsStale = staleAt !== undefined && Date.now() > staleAt
   // Un estacionamiento deshabilitado nunca debe anunciarse como disponible.
   const occupancy: Occupancy = row.activo === false ? 'UNKNOWN' :
     ['FREE', 'LIBRE'].includes(raw) ? 'FREE' :
     ['OCCUPIED', 'OCUPADO'].includes(raw) ? 'OCCUPIED' : 'UNKNOWN'
   const time = String(row.updatedAt ?? row.updated_at ?? row.ultimaLectura ?? row.fechaCambio ?? row.timestamp ?? '')
-  return { id: code as SpaceCode, occupancy, updatedAt: Number.isFinite(Date.parse(time)) ? time : '', isStale: sensorIsStale, sequence: typeof row.sequence === 'number' ? row.sequence : undefined }
+  return { id: code as SpaceCode, occupancy, updatedAt: Number.isFinite(Date.parse(time)) ? time : '', isStale: sensorIsStale, staleAt, sequence: typeof row.sequence === 'number' ? row.sequence : undefined }
 }
 export function parseSnapshot(value: unknown): Space[] {
   const data = obj(value)
@@ -42,4 +47,17 @@ export async function getSpaces(signal?: AbortSignal): Promise<Space[]> {
   const response = await fetch(`${apiUrl}${import.meta.env.VITE_SPACES_PATH || '/api/estacionamientos'}`, { signal, cache: 'no-store', headers: { Accept: 'application/json' } })
   if (!response.ok) throw new Error(`No se pudo consultar la disponibilidad (${response.status}).`)
   return parseSnapshot(await response.json())
+}
+
+/** Actualiza la antigüedad sin consultar al servidor ni perder el último estado. */
+export function refreshSpaceFreshness(spaces: Space[], now = Date.now()): Space[] {
+  let changed = false
+  const next = spaces.map(space => {
+    if (space.staleAt === undefined) return space
+    const isStale = now > space.staleAt
+    if (space.isStale === isStale) return space
+    changed = true
+    return { ...space, isStale }
+  })
+  return changed ? next : spaces
 }

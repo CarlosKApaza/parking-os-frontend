@@ -7,7 +7,7 @@ export type SpaceCode = typeof spaceCodes[number]
 export type Occupancy = 'FREE' | 'OCCUPIED' | 'UNKNOWN'
 export type SpaceStatus = 'free' | 'occupied' | 'reserved' | 'unknown'
 // isStale informa sobre la antigüedad de la lectura, sin borrar el último estado guardado.
-export type Space = { id: SpaceCode; occupancy: Occupancy; updatedAt: string; isStale?: boolean; sequence?: number }
+export type Space = { id: SpaceCode; occupancy: Occupancy; updatedAt: string; isStale?: boolean; staleAt?: number; sequence?: number }
 const reservationSchema = z.object({
   id: z.string(), space: z.enum(spaceCodes), date: z.string(), from: z.string(), to: z.string(),
   status: z.enum(['active', 'completed', 'cancelled']),

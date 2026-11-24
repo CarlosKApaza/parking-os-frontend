@@ -37,6 +37,11 @@ export default defineConfig({
     strictPort: true,
     // Solo desarrollo: el navegador llama al mismo origen y Vite reenvía a NestJS.
     proxy: {
+      '/socket.io': {
+        target: 'http://127.0.0.1:3000',
+        ws: true,
+        changeOrigin: true,
+      },
       '/api/estacionamientos': {
         target: 'http://127.0.0.1:3000',
         changeOrigin: true,

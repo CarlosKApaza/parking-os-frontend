@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createDemo, demoPaymentHistory, displayStatus, payDemoTicket, reservationStatus, validateBooking, type Reservation, type Space } from '../src/lib/model'
-import { mergeSpace, parseSnapshot, parseSpace } from '../src/services/parking'
+import { mergeSpace, parseSnapshot, parseSpace, refreshSpaceFreshness } from '../src/services/parking'
 
 const space: Space = { id: 'P1', occupancy: 'FREE', updatedAt: '2026-10-11T10:00:00Z', sequence: 5 }
 const now = new Date('2026-10-11T09:00:00')
@@ -101,4 +101,18 @@ describe('historial de pagos', () => {
     expect(demoPaymentHistory(state)[0].amount).toBe(10)
   })
   it('rechaza tickets desconocidos', () => expect(() => payDemoTicket(createDemo(), 'INVALIDO', 'qr')).toThrow('Ticket'))
+})
+
+describe('antigüedad de sensores sin polling', () => {
+  it('marca la lectura antigua localmente y la recupera con un nuevo evento', () => {
+    const at = Date.now()
+    const incoming = parseSpace({codigo:'P1',sensorCodigo:'IR01',estado:'LIBRE',ultimaLectura:new Date(at).toISOString()})!
+    expect(refreshSpaceFreshness([incoming], incoming.staleAt! + 1)[0]).toMatchObject({occupancy:'FREE',isStale:true})
+    const fresh = parseSpace({codigo:'P1',sensorCodigo:'IR01',estado:'OCUPADO',ultimaLectura:new Date(at+1).toISOString()})!
+    expect(mergeSpace([incoming],fresh)[0]).toMatchObject({occupancy:'OCCUPIED',isStale:false})
+  })
+  it('no cambia el arreglo si la antigüedad sigue igual', () => {
+    const list = [{id:'P1',occupancy:'FREE',updatedAt:'',isStale:false,staleAt:Date.now()+90000}] as Space[]
+    expect(refreshSpaceFreshness(list)).toBe(list)
+  })
 })

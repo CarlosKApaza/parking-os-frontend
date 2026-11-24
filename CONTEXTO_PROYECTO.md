@@ -46,3 +46,7 @@ py -3.14 -u .\main.py --entrada 1 --salida 2 --backend dshow --fps 20 --quality 
 5. Validar flujo integral en maqueta y documentar resultados. Conservar las piezas ya operativas.
 
 No se ha modificado NestJS, MySQL, ESP32 ni Python OCR en los commits de diseño del frontend. No dar por completada la integración física hasta probarla.
+
+## WebSockets — fase de ocupación
+
+Se añadió Gateway Socket.IO en backend (rama feat/camaras-ocr, puerto 3000, ruta /socket.io) y cliente en frontend (feat/payments-profile-history). Evento estacionamiento.actualizado por cada lectura confirmada en MySQL, incluidos reportes sin cambio. REST para estado inicial, reconexión y respaldo cada 3 s exclusivamente si el socket no está sano. Antigüedad calculada localmente. Proxy WebSocket en Vite, sin modificar ESP32, cámaras ni UI. Pendiente instalar nuevas dependencias del backend, compilar y validar con dos pestañas/ESP32. El OCR, pagos, reservas y barreras aún no se difunden por Socket.IO.
