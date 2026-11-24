@@ -129,6 +129,7 @@ export function SpacesPage() {
           const itemStatus = statusOf(item)
           const selecting = item.occupancy==='FREE'&&hold?.plaza===id
           const otherHold = item.occupancy==='FREE'&&!selecting&&!!publicHold(id)
+          const reserved = itemStatus === 'reserved' && !selecting && !otherHold
           const locked = itemStatus === 'unknown' || itemStatus === 'reserved'||otherHold
           const displayed = selecting ? 'Seleccionado' : otherHold?'En selección':locked ? itemStatus === 'reserved' ? 'Reservado' : 'Bloqueado' : statusLabels[itemStatus]
           return <button
@@ -142,6 +143,11 @@ export function SpacesPage() {
             <span className="parking-v2-code">{id}</span>
             <span className="parking-v2-icon">
               {itemStatus === 'occupied' ? <img src="/parking-space-sedan-v2.webp" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(id)} alt="" draggable={false} /> :
+                reserved ? <>
+                  <img src="/parking-space-sedan-v2.webp" onError={event => { if (!event.currentTarget.src.endsWith('/parking-car-realistic.webp')) event.currentTarget.src = '/parking-car-realistic.webp' }} className={'parking-v2-car-image parking-v2-car--' + carDirection(id)} alt="" draggable={false}/>
+                  <span className="parking-v2-reserved-lock" aria-hidden="true"><SolidLock size={18}/></span>
+                  <span className="parking-v2-reserved-label">Reservado</span>
+                </> :
                 selecting ? <Check size={23}/> :
                 locked ? <span className="parking-v2-lock-inline"><SolidLock size={27}/><span>{displayed}</span></span> :
                 <Plus size={26}/>}

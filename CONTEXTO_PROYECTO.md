@@ -58,3 +58,5 @@ Pruebas del 24/11: Alex en PC y Daniel en Android autenticados con perfiles dist
 
 ## Reservas concurrentes
 Backend y frontend conectados con retenciones de 30 s, transacciones MySQL, evento público reservas.actualizadas (invalida snapshot REST), recuperación al reconectar y lista privada por JWT. La plaza futura reservada se muestra azul y permite consultar horarios alternativos si físicamente libre. Retención ajena ámbar; propia azul. No se cobra al reservar. Vehículos demo verificados; nuevas matrículas requieren verificación. Prueba entre PC/celular pendiente. Android conservar sesión al volver de WhatsApp confirmado por usuario.
+
+Validación posterior 24/11: el usuario confirmó la reserva P2 de Alex en MySQL, estado CONFIRMADA, 25/11 09:00–11:00 Bolivia y cambios visibles para visitantes y cuentas. Se aplica coche gris con candado a plazas reservadas y splash de 1,6 s seguido de bienvenida al cerrar sesión desde Perfil. No altera retenciones, reglas de reservas, JWT ni estado físico. Pendiente validar aspecto visual y flujo de salida actualizado.

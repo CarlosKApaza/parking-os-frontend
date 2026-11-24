@@ -10,9 +10,20 @@ export function RequireAuth({children}:{children:ReactNode}){const {user}=useAut
 export function InitialHome({children}:{children:ReactNode}){
   const {user}=useAuth()
   const [first]=useState(()=>{try{return !user&&sessionStorage.getItem('parkingos:welcome:v1')!=='1'}catch{return false}})
+  return first&&!user?<Navigate replace to="/inicio-carga"/>:children
+}
+export function SplashPage(){
+  const {user}=useAuth()
   const navigate=useNavigate()
-  useEffect(()=>{if(!first)return;const timer=window.setTimeout(()=>{try{sessionStorage.setItem('parkingos:welcome:v1','1')}catch{}navigate('/bienvenida',{replace:true})},750);return()=>window.clearTimeout(timer)},[first,navigate])
-  return first?<div className="auth-splash"><Brand/><p>Estacionamiento inteligente</p><span className="auth-loading-line"/></div>:children
+  useEffect(()=>{
+    if(user){navigate('/',{replace:true});return}
+    const timer=window.setTimeout(()=>{
+      try{sessionStorage.setItem('parkingos:welcome:v1','1')}catch{}
+      navigate('/bienvenida',{replace:true})
+    },1600)
+    return()=>window.clearTimeout(timer)
+  },[user,navigate])
+  return <div className="auth-splash" role="status" aria-label="Iniciando Parking OS"><Brand/><p>Estacionamiento inteligente</p><span className="auth-loading-line" aria-hidden="true"/></div>
 }
 export function WelcomePage(){useEffect(()=>{try{sessionStorage.setItem('parkingos:welcome:v1','1')}catch{}},[]);return <div className="auth-shell auth-welcome"><div className="auth-inner"><Brand/><div className="auth-art"><span className="auth-parking-outline"/><ParkingSquare className="auth-art-icon" size={44}/><img src="/parking-space-sedan-v2.webp" alt="Automóvil en una plaza"/></div><div className="auth-welcome-copy"><h1>Tu espacio,<br/><span>sin dar vueltas.</span></h1><p>Consulta, reserva y paga desde un solo lugar.</p></div><Link className="auth-primary" to="/login">Comenzar <ArrowRight size={20}/></Link><Link className="auth-text-link" to="/">Continuar como invitado</Link></div></div>}
 export function AuthPage({register=false}:{register?:boolean}){
