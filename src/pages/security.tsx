@@ -202,6 +202,8 @@ export function SecurityPage() {
     ? 'La cámara requiere una dirección HTTPS si la aplicación usa HTTPS.'
     : status === 'checking'
       ? 'Buscando fotogramas de la cámara...'
+      : current.id === 'salida'
+      ? 'La W77 todavía no está conectada o su servidor no está ejecutándose en el puerto 8766.'
       : lastError === 'HTTP 503'
         ? 'La UVC está apagada u ocupada por otro programa. Revisa la terminal de Python.'
         : 'Comprueba que la cámara siga encendida y que ambos equipos estén en la misma red Wi-Fi.'
@@ -220,7 +222,7 @@ export function SecurityPage() {
       <div className="security-live-meta">
         <span className="security-live-camera-icon"><Camera size={19}/></span>
         <div><strong>{current.name}</strong><small>{current.zone} · Maqueta física</small></div>
-        <span className="security-live-quality">UVC</span>
+        <span className="security-live-quality">{current.model}</span>
       </div>
       <div className="security-live-stage" ref={frameRef}>
         {active && frameUrl && <img
@@ -270,6 +272,6 @@ export function SecurityPage() {
       />)}
     </div>
 
-    <p className="security-live-note">Prototipo en Wi-Fi local · Sin grabación ni reconocimiento facial</p>
+    <p className="security-live-note">Transmisión en red local privada · El reconocimiento de placas se añadirá después.</p>
   </section>
 }
