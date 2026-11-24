@@ -1,28 +1,61 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Check, Clock3, QrCode, ScanLine, Ticket, Wallet } from 'lucide-react'
-import { Back, DemoNote, PageTitle, SuccessMark } from '@/components/shared'
+import { ArrowLeft, ArrowRight, CalendarDays, Check, Clock3, Coins, House, QrCode, ReceiptText, ScanLine, Ticket, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useParkingStore } from '@/context/parking-context'
+import { demoExitTickets, demoPaymentHistory } from '@/lib/model'
 import { money } from '@/lib/utils'
+import { paymentDate } from './payment-history'
 
 export function PaymentPage() {
   const { demo, pay, isDemo } = useParkingStore()
   const [step, setStep] = useState(0)
   const [ticket, setTicket] = useState('')
+  const [selected, setSelected] = useState(demoExitTickets[0])
   const [method, setMethod] = useState<'wallet' | 'qr'>('qr')
   const [error, setError] = useState('')
-  const ticketId = 'DEMO-0042'
+  const next = demoExitTickets.find(t => !demo.paidTickets.includes(t.id))
+  const paid = demoPaymentHistory(demo).find(p => p.ticket === selected.id)
+  const stage = step === 2 ? 2 : step
   function lookup(event?: FormEvent, sample = false) {
     event?.preventDefault()
-    if (!sample && ticket.trim().toUpperCase() !== ticketId) { setError('No encontramos ese ticket de prueba. Usa DEMO-0042.'); return }
-    setTicket(ticketId); setError(''); setStep(demo.paidTickets.includes(ticketId) ? 3 : 1)
+    if (!isDemo) return
+    const id = sample ? (next ?? demoExitTickets[0]).id : ticket.trim().toUpperCase()
+    const match = demoExitTickets.find(t => t.id === id)
+    if (!match) { setError('No encontramos ese ticket. Prueba DEMO-0042, DEMO-0041 o DEMO-0040.'); return }
+    setSelected(match); setTicket(id); setError('')
+    setStep(demo.paidTickets.includes(id) ? 2 : 1)
   }
-  function finish() { try { pay(ticketId, method); setError(''); setStep(3) } catch (error) { setError((error as Error).message) } }
-  return <><Back to="/">Volver al inicio</Back><PageTitle eyebrow="MENOS ESPERA. MÁS LIBERTAD." title="Continúa tu camino" description="Tu pago de salida, paso a paso."/><div className="payment-layout"><section className="panel payment-panel"><div className="payment-steps">{['Tu ticket','Resumen','Pago'].map((label,i) => <div key={label} className={step >= i ? 'active' : ''}><span>{step > i ? <Check size={14}/> : i + 1}</span><b>{label}</b></div>)}</div>
-    {step === 0 && <><h2>Todo empieza con tu ticket.</h2><p className="muted-text">Prueba la lectura de un ticket de estacionamiento.</p><div className="scanner-placeholder"><div className="scanner-view"><ScanLine size={70} strokeWidth={1}/><i/></div><span>Escáner de demostración</span><small>La cámara se habilitará al integrar tickets reales.</small></div><Button className="w-full" disabled={!isDemo} onClick={() => lookup(undefined,true)}><ScanLine size={18}/>Usar ticket de prueba<ArrowRight size={18}/></Button><div className="or-divider"><span>O ingresa el código</span></div><form onSubmit={lookup}><label htmlFor="ticket-code" className="field-label">Código de ticket</label><div className="ticket-input"><input id="ticket-code" placeholder="DEMO-0042" value={ticket} onChange={e => setTicket(e.target.value)} maxLength={40}/><Button type="submit" variant="secondary" disabled={!ticket.trim() || !isDemo}>Consultar</Button></div></form></>}
-    {step === 1 && <><div className="payment-ticket-icon"><Ticket size={29}/></div><h2>Tu visita, en un vistazo.</h2><p className="muted-text">Revisa los datos antes de continuar.</p><div className="receipt"><div className="summary-line"><span>Ticket</span><b>{ticketId}</b></div><div className="summary-line"><span>Espacio</span><b>P2 · Planta única</b></div><div className="summary-line"><span>Entrada ilustrativa</span><b>10:15</b></div><div className="summary-line"><span>Salida ilustrativa</span><b>11:25</b></div><div className="summary-line"><span>Tiempo de estancia</span><b>1 h 10 min</b></div><div className="receipt-total"><span>Total de prueba</span><strong><small>Bs</small> 10,00</strong></div></div><Button className="w-full" onClick={() => setStep(2)}>Continuar al pago<ArrowRight size={18}/></Button><DemoNote>Tiempo e importe ilustrativos. La tarifa real está por definir.</DemoNote></>}
-    {step === 2 && <><h2>Elige cómo seguir.</h2><p className="muted-text">Simula el pago con el medio que prefieras.</p><div className="payment-methods"><button className={method === 'qr' ? 'active' : ''} onClick={() => { setMethod('qr'); setError('') }}><QrCode size={24}/><strong>QR bancario</strong><small>Demostración</small>{method === 'qr' && <Check size={16}/>}</button><button className={method === 'wallet' ? 'active' : ''} onClick={() => { setMethod('wallet'); setError('') }}><Wallet size={24}/><strong>Mi billetera</strong><small>Bs {money(demo.balance)}</small>{method === 'wallet' && <Check size={16}/>}</button></div>{method === 'qr' ? <div className="demo-qr"><QrCode size={95} strokeWidth={1.1}/><span>VISTA DE DEMOSTRACIÓN</span><p>No es un QR de cobro.</p></div> : <div className="wallet-payment-summary"><Wallet size={32}/><p>Se descontarán <b>Bs 10,00</b> de tu saldo ficticio.</p>{demo.balance < 10 && <Link className="text-link" to="/billetera">Recargar saldo de prueba<ArrowRight size={16}/></Link>}</div>}<div className="summary-line total"><span>Total simulado</span><b>Bs 10,00</b></div><Button className="w-full" onClick={finish} disabled={!isDemo || (method === 'wallet' && demo.balance < 10)}><Check size={18}/>Simular pago confirmado</Button><DemoNote>Un pago real se confirma con el proveedor. Este botón solo completa la demo.</DemoNote></>}
-    {step === 3 && <div className="payment-success"><SuccessMark/><span className="eyebrow">TODO LISTO EN LA DEMO</span><h2>¡Buen camino!</h2><p>El pago de prueba de tu ticket está registrado.</p><div className="paid-ticket"><span>{ticketId}</span><b>Bs 10,00</b><span className="subtle-badge">Simulación completada</span></div><p className="fine-print">No se efectuó un cobro real ni se autorizó la apertura de una barrera.</p><Button asChild className="w-full"><Link to="/">Volver al inicio<ArrowRight size={18}/></Link></Button></div>}
-    {error && <p className="form-error" role="alert">{error}</p>}</section><aside className="payment-aside"><div className="payment-aside-art"><ScanLine size={76} strokeWidth={.8}/></div><span className="eyebrow">ASÍ DE SENCILLO</span><h2>Un último paso.<br/>Y a seguir tu día.</h2><ol><li><span>01</span><div><b>Encuentra tu ticket</b><p>Identifica tu sesión de estacionamiento.</p></div></li><li><span>02</span><div><b>Revisa tu visita</b><p>Consulta tiempo e importe antes de pagar.</p></div></li><li><span>03</span><div><b>Espera la confirmación</b><p>El servicio verifica el pago antes de autorizar la salida.</p></div></li></ol><div className="payment-demo-tag"><Clock3 size={17}/>Estás explorando un flujo de demostración.</div></aside></div></>
+  function finish() {
+    try { pay(selected.id, method); setError(''); setStep(2) }
+    catch (err) { setError((err as Error).message) }
+  }
+  return <div className="exit-payment account-v2">
+    {step > 0 && <button className="account-back" onClick={() => { setStep(0); setError('') }}><ArrowLeft size={20}/>Pagar salida</button>}
+    {step === 0 && <h1>Pagar salida</h1>}
+    {step === 1 && <h1>Resumen de pago</h1>}
+    <ol className="exit-steps" aria-label="Progreso del pago">{['Ticket','Resumen','Pago'].map((label,i) => <li key={label} aria-current={stage === i ? 'step' : undefined} className={i < stage ? 'done' : i === stage ? 'current' : ''}><span>{i < stage ? <Check size={19} strokeWidth={3}/> : i+1}</span><b>{label}</b></li>)}</ol>
+    {step === 0 && <>
+      <div className="exit-scanner"><div className="exit-scanner-inner"><div className="exit-scan-art" aria-hidden="true"><ScanLine size={96} strokeWidth={1.5}/><i/></div><strong>Escáner de demostración</strong></div></div>
+      <Button className="account-primary w-full" disabled={!isDemo} onClick={() => lookup(undefined,true)}><ScanLine size={21}/>{next ? 'Usar ticket de prueba' : 'Consultar ticket de prueba'}<ArrowRight size={20}/></Button>
+      <div className="account-or"><span>O ingresa el código</span></div>
+      <form onSubmit={lookup}><label htmlFor="ticket-code" className="account-field-label">Código de ticket</label><div className="exit-input"><input id="ticket-code" value={ticket} placeholder="DEMO-0042" onChange={e => setTicket(e.target.value)} maxLength={40} autoComplete="off"/><Button type="submit" variant="secondary" disabled={!ticket.trim() || !isDemo}>Consultar</Button></div></form>
+      <p className="account-note">{isDemo ? 'Demostración local. No se realiza ningún cobro real.' : 'Los pagos estarán disponibles al integrar el servicio.'}</p>
+    </>}
+    {step === 1 && <>
+      <section className="exit-total"><div><span>DEMO · PAGO DE PRUEBA</span><h2>Total a pagar</h2><strong>Bs {money(selected.total)}</strong></div><svg aria-hidden="true" viewBox="0 0 120 110" className="exit-gate"><ellipse cx="65" cy="100" rx="53" ry="5" fill="#064b3a" opacity=".17"/><rect x="82" y="23" width="29" height="74" rx="4" fill="#073e44"/><rect x="82" y="19" width="29" height="9" rx="3" fill="#effff6"/><rect x="88" y="30" width="5" height="64" fill="#185d61"/><path d="M12 40H89" stroke="#fff" strokeWidth="11" strokeLinecap="round"/><path d="M19 40H34M46 40H61M73 40H82" stroke="#f04455" strokeWidth="6"/><circle cx="88" cy="40" r="3.5" fill="#103a42"/></svg></section>
+      <div className="account-detail"><div><Ticket size={21}/><span>Ticket</span><b>{selected.id}</b></div><div><Clock3 size={21}/><span>Tiempo de estadía</span><b>{Math.floor(selected.minutes/60)} h{selected.minutes%60 ? ` ${selected.minutes%60} min` : ''}</b></div><div><Coins size={21}/><span>Tarifa demo / hora</span><b>Bs {money(selected.rate)}</b></div></div>
+      <div className="exit-methods" aria-label="Método de pago"><button className={method === 'qr' ? 'selected' : ''} aria-pressed={method === 'qr'} onClick={() => {setMethod('qr');setError('')}}><QrCode size={20}/>QR de prueba</button><button className={method === 'wallet' ? 'selected' : ''} aria-pressed={method === 'wallet'} onClick={() => {setMethod('wallet');setError('')}}><Wallet size={20}/>Billetera</button></div>
+      {method === 'wallet' && <p className="account-note">Saldo disponible: Bs {money(demo.balance)}. {demo.balance < selected.total && <Link to="/billetera">Recargar saldo de prueba</Link>}</p>}
+      <Button className="account-primary w-full" onClick={finish} disabled={!isDemo || (method === 'wallet' && demo.balance < selected.total)}>Confirmar pago de prueba<ArrowRight size={20}/></Button>
+      <p className="account-note">Importe ilustrativo por minutos. No se genera un QR de cobro real.</p>
+    </>}
+    {step === 2 && <section className="exit-success">
+      <div className="exit-success-mark"><Check size={67} strokeWidth={3.8}/></div><h1>Pago realizado</h1><p className="account-note">Pago de demostración</p>
+      {paid ? <><div className="account-detail success-detail"><div><Coins size={22}/><span>Importe</span><strong>Bs {money(paid.amount)}</strong></div><div><CalendarDays size={21}/><span>Fecha</span><b>{paymentDate(paid.date)}</b></div><div><Ticket size={21}/><span>Ticket</span><b>{paid.ticket}</b></div><div><ReceiptText size={21}/><span>Comprobante</span><b className="account-paid"><Check size={15}/>Guardado en el historial</b></div></div><Button asChild className="account-primary w-full"><Link to={`/perfil/pagos?ticket=${encodeURIComponent(paid.ticket)}`}><ReceiptText size={22}/>Ver comprobante<ArrowRight size={20}/></Link></Button></> : <p className="account-note">El ticket figura pagado pero no hay un comprobante local disponible.</p>}
+      <Button asChild variant="outline" className="account-secondary w-full"><Link to="/"><House size={21}/>Volver al inicio</Link></Button>
+      <p className="account-note">No se efectuó un cobro real ni se abrió una barrera.</p>
+    </section>}
+    {error && <p className="form-error" role="alert">{error}</p>}
+  </div>
 }

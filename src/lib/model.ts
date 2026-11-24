@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { localDate } from './utils'
+import { DEMO_RATE_BS } from './pricing'
 
 export const spaceCodes = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'] as const
 export type SpaceCode = typeof spaceCodes[number]
@@ -61,9 +62,36 @@ export function validateBooking(input: BookingInput, spaces: Space[], reservatio
   if (reservations.some(r => r.space === input.space && r.status === 'active' && start < new Date(`${r.date}T${r.to}`) && end > new Date(`${r.date}T${r.from}`))) return 'Ya existe una reserva para esta plaza en ese horario.'
   return null
 }
+// Tickets de salida ficticios: cobro proporcional por minutos (solo demo).
+// No altera la regla por horas de las reservas ni autoriza una barrera.
+export const demoExitTickets = [
+  { id: 'DEMO-0042', minutes: 90, place: 'Maqueta física' },
+  { id: 'DEMO-0041', minutes: 60, place: 'Planta única' },
+  { id: 'DEMO-0040', minutes: 60, place: 'Planta única' },
+].map(ticket => ({ ...ticket, rate: DEMO_RATE_BS, total: Math.round(ticket.minutes / 60 * DEMO_RATE_BS * 100) / 100 }))
+
+export type DemoPayment = { id: string; ticket: string; amount: number; date: string; method: 'wallet' | 'qr'; place: string }
+
+// Los movimientos ya se persisten en localStorage. Derivamos el historial sin
+// duplicar datos ni cambiar el esquema v1; conservamos importes antiguos.
+export function demoPaymentHistory(state: DemoState): DemoPayment[] {
+  const seen = new Set<string>()
+  const payments: DemoPayment[] = []
+  for (const movement of state.movements) {
+    const match = /^Pago (DEMO-\d+) · (billetera|QR externo)$/.exec(movement.title)
+    if (!match || movement.unit !== 'Bs' || movement.amount >= 0 || !state.paidTickets.includes(match[1]) || seen.has(match[1])) continue
+    seen.add(match[1])
+    payments.push({ id: movement.id, ticket: match[1], amount: -movement.amount, date: movement.date,
+      method: match[2] === 'billetera' ? 'wallet' : 'qr',
+      place: demoExitTickets.find(t => t.id === match[1])?.place ?? 'Estacionamiento principal' })
+  }
+  return payments.sort((a,b) => Date.parse(b.date) - Date.parse(a.date))
+}
 export function payDemoTicket(state: DemoState, ticket: string, method: 'wallet' | 'qr'): DemoState {
   if (state.paidTickets.includes(ticket)) return state
-  if (method === 'wallet' && state.balance < 10) throw new Error('Saldo insuficiente. Recarga tu billetera o elige el QR de prueba.')
-  return { ...state, balance: state.balance - (method === 'wallet' ? 10 : 0), paidTickets: [...state.paidTickets, ticket],
-    movements: [{ id: crypto.randomUUID(), title: `Pago ${ticket} · ${method === 'wallet' ? 'billetera' : 'QR externo'}`, amount: -10, unit: 'Bs', date: new Date().toISOString() }, ...state.movements] }
+  const quote = demoExitTickets.find(t => t.id === ticket)
+  if (!quote) throw new Error('Ticket de prueba no encontrado.')
+  if (method === 'wallet' && state.balance < quote.total) throw new Error('Saldo insuficiente. Recarga tu billetera o elige el QR de prueba.')
+  return { ...state, balance: state.balance - (method === 'wallet' ? quote.total : 0), paidTickets: [...state.paidTickets, ticket],
+    movements: [{ id: crypto.randomUUID(), title: `Pago ${ticket} · ${method === 'wallet' ? 'billetera' : 'QR externo'}`, amount: -quote.total, unit: 'Bs', date: new Date().toISOString() }, ...state.movements] }
 }

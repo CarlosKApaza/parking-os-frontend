@@ -6,5 +6,6 @@ import './styles.css'
 import './mobile-spaces.css'
 import './home-overview.css'
 import './security-live.css'
+import './account-v2.css'
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createDemo, displayStatus, payDemoTicket, reservationStatus, validateBooking, type Reservation, type Space } from '../src/lib/model'
+import { createDemo, demoPaymentHistory, displayStatus, payDemoTicket, reservationStatus, validateBooking, type Reservation, type Space } from '../src/lib/model'
 import { mergeSpace, parseSnapshot, parseSpace } from '../src/services/parking'
 
 const space: Space = { id: 'P1', occupancy: 'FREE', updatedAt: '2026-10-11T10:00:00Z', sequence: 5 }
@@ -72,7 +72,7 @@ describe('pagos de demostración', () => {
   it('no descuenta dos veces el mismo ticket', () => {
     const state = createDemo()
     const paid = payDemoTicket(state, 'DEMO-0042', 'wallet')
-    expect(paid.balance).toBe(110)
+    expect(paid.balance).toBe(112.5)
     expect(payDemoTicket(paid, 'DEMO-0042', 'wallet')).toBe(paid)
   })
   it('no permite saldo negativo', () => expect(() => payDemoTicket({ ...createDemo(), balance: 5 }, 'DEMO-0042', 'wallet')).toThrow('Saldo insuficiente'))
@@ -81,4 +81,24 @@ describe('pagos de demostración', () => {
     expect(paid.balance).toBe(120)
     expect(paid.paidTickets).toContain('DEMO-0042')
   })
+})
+
+describe('historial de pagos', () => {
+  it('conserva importe, método, fecha y evita duplicados', () => {
+    const state = payDemoTicket(createDemo(), 'DEMO-0042', 'wallet')
+    const paid = payDemoTicket(state, 'DEMO-0041', 'qr')
+    const history = demoPaymentHistory(payDemoTicket(paid, 'DEMO-0042', 'qr'))
+    expect(history).toHaveLength(2)
+    expect(history.find(p => p.ticket === 'DEMO-0042')).toMatchObject({ amount: 7.5, method: 'wallet' })
+    expect(history.find(p => p.ticket === 'DEMO-0041')).toMatchObject({ amount: 5, method: 'qr' })
+    expect(history.every(p => Number.isFinite(Date.parse(p.date)))).toBe(true)
+    expect(paid.balance).toBe(112.5)
+  })
+  it('no mezcla recargas ni reservas con pagos', () => expect(demoPaymentHistory(createDemo())).toEqual([]))
+  it('conserva los importes del historial anterior', () => {
+    const state = payDemoTicket(createDemo(), 'DEMO-0042', 'qr')
+    state.movements[0].amount = -10
+    expect(demoPaymentHistory(state)[0].amount).toBe(10)
+  })
+  it('rechaza tickets desconocidos', () => expect(() => payDemoTicket(createDemo(), 'INVALIDO', 'qr')).toThrow('Ticket'))
 })

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ArrowUpRight, Bell, CalendarDays, CarFront, Check, ChevronRight, CircleParking, Download, Home, MapPin, ParkingSquare, ScanLine, ShieldCheck, UserRound, Wallet, X } from 'lucide-react'
+import { ArrowUpRight, Bell, CalendarDays, CarFront, Check, ChevronRight, CircleParking, CreditCard, Download, Home, MapPin, ParkingSquare, ScanLine, ShieldCheck, UserRound, Wallet, X } from 'lucide-react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useParkingStore } from '@/context/parking-context'
 import { useInstall } from '@/hooks/use-install'
@@ -37,7 +37,7 @@ export function Layout() {
   }, [])
   const activeCount = reservations.filter(r => r.status === 'active').length
   const name = isDemo ? demo.name : 'Visitante'
-  const currentLabel = navigation.find(n => n.to === location.pathname)?.label ?? ({ '/billetera': 'Billetera', '/pago': 'Pago de salida', '/vehiculos': 'Mis vehículos', '/reservar': 'Nueva reserva' }[location.pathname] || 'Parking OS')
+  const currentLabel = navigation.find(n => n.to === location.pathname)?.label ?? ({ '/perfil/pagos': 'Historial de pagos', '/billetera': 'Billetera', '/pago': 'Pago de salida', '/vehiculos': 'Mis vehículos', '/reservar': 'Nueva reserva' }[location.pathname] || 'Parking OS')
   const installClick = () => install.canInstall ? void install.install() : setInstallHelp(true)
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">Saltar al contenido</a>
@@ -69,6 +69,7 @@ export function Layout() {
             <div className="quick-profile-header"><span className="avatar">{name.slice(0, 1).toUpperCase()}</span><span><strong>{name}</strong><small>{isDemo ? 'Cuenta de demostración' : 'Consulta pública'}</small></span></div>
             <nav className="quick-profile-links" aria-label="Accesos rápidos de la cuenta">
               <NavLink to="/perfil" onClick={() => setOpenMenu(null)}><UserRound size={17}/>Mi perfil<ChevronRight size={15}/></NavLink>
+              <NavLink to="/perfil/pagos" onClick={() => setOpenMenu(null)}><CreditCard size={17}/>Historial de pagos<ChevronRight size={15}/></NavLink>
               <NavLink to="/reservas" onClick={() => setOpenMenu(null)}><CalendarDays size={17}/>Mis reservas<ChevronRight size={15}/></NavLink>
               <NavLink to="/billetera" onClick={() => setOpenMenu(null)}><Wallet size={17}/>Billetera<ChevronRight size={15}/></NavLink>
               <NavLink to="/vehiculos" onClick={() => setOpenMenu(null)}><CarFront size={17}/>Mis vehículos<ChevronRight size={15}/></NavLink>
