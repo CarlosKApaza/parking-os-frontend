@@ -75,14 +75,15 @@
 .home-hero-lane-first{right:79%}
 .home-hero-lane-last{right:7%}
 .home-hero-bracket{position:absolute;width:22px;height:22px;border-color:#45f7a2;filter:drop-shadow(0 0 7px #13e8946f)}
-.home-hero-bracket.corner-one{left:18%;top:17%;border-top:4px solid;border-left:4px solid;border-radius:7px 0 0 0}
-.home-hero-bracket.corner-two{right:13%;top:17%;border-top:4px solid;border-right:4px solid;border-radius:0 7px 0 0}
-.home-hero-bracket.corner-three{left:18%;bottom:17%;border-bottom:4px solid;border-left:4px solid;border-radius:0 0 0 7px}
-.home-hero-bracket.corner-four{right:13%;bottom:17%;border-bottom:4px solid;border-right:4px solid;border-radius:0 0 7px 0}
+.home-hero-bracket.corner-one{left:18%;top:17%;border-top:4px solid #45f7a2;border-left:4px solid #45f7a2;border-radius:7px 0 0 0}
+.home-hero-bracket.corner-two{right:13%;top:17%;border-top:4px solid #45f7a2;border-right:4px solid #45f7a2;border-radius:0 7px 0 0}
+.home-hero-bracket.corner-three{left:18%;bottom:17%;border-bottom:4px solid #45f7a2;border-left:4px solid #45f7a2;border-radius:0 0 0 7px}
+.home-hero-bracket.corner-four{right:13%;bottom:17%;border-bottom:4px solid #45f7a2;border-right:4px solid #45f7a2;border-radius:0 0 7px 0}
 .home-hero-car{
-  position:absolute;z-index:2;top:-13%;right:7%;
-  width:43%;height:127%;max-width:390px;
+  position:absolute;z-index:2;top:-20%;right:8%;
+  width:44%;height:144%;max-width:390px;
   object-fit:contain;object-position:center;
+  transform:rotate(28deg);
   filter:drop-shadow(0 17px 13px #06191891);
   pointer-events:none;user-select:none;
 }
@@ -193,7 +194,7 @@
   .home-landing-count strong{font-size:clamp(69px,18vw,90px)}
   .home-landing-count>div>span{font-size:20px}
   .home-landing-count p{font-size:15px;margin:3px 0 0 1px}
-  .home-hero-car{right:0%;top:-17%;width:53%;height:135%}
+  .home-hero-car{right:2%;top:-19%;width:49%;height:145%}
   .home-hero-parking{left:46%}
   .home-hero-bracket{width:16px;height:16px}
   .home-hero-signal{bottom:6px;left:6%;font-size:8px}
@@ -227,7 +228,7 @@
   .home-landing-count strong{font-size:clamp(63px,17.3vw,70px)}
   .home-landing-count>div>span{font-size:17px}
   .home-landing-count p{font-size:14px}
-  .home-hero-car{width:54%;right:-3%;height:127%;top:-12%}
+  .home-hero-car{width:51%;right:0%;height:142%;top:-15%}
   .home-landing-stats{gap:8px}
   .home-landing-stat{padding:10px 9px;min-height:99px}
   .home-landing-stat-label{font-size:10px}
