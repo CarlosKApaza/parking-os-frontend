@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react'
 import {useAuth} from '@/context/auth-context'
 import {accountRequest} from '@/services/auth'
-import {toReservation,serverTimeAt,activePublicHold,type Availability,type RemoteReservation} from '@/services/reservations'
+import {toReservation,serverTimeAt,activePublicHold,parseConsolidatedAvailability,type Availability,type RemoteReservation} from '@/services/reservations'
 import type {SpaceCode} from '@/lib/model'
 
 export function useReservations(revision:number,socketConnected:boolean){
@@ -19,9 +19,9 @@ export function useReservations(revision:number,socketConnected:boolean){
     const c=new AbortController()
     const timeout=window.setTimeout(()=>c.abort(),6000)
     let disposed=false
-    accountRequest<Availability>('/reservas/disponibilidad',{signal:c.signal}).then(v=>{
+    accountRequest<unknown>('/estacionamientos/disponibilidad',{signal:c.signal}).then(raw=>{
       if(disposed||c.signal.aborted)return
-      if(!Number.isFinite(Date.parse(v.servidorAhora))||!Array.isArray(v.retenciones)||!Array.isArray(v.reservas))throw new Error('Disponibilidad inválida.')
+      const v=parseConsolidatedAvailability(raw)
       setSample({value:v,receivedAt:performance.now()});setPublicError('')
     }).catch(e=>{if(!disposed)setPublicError(c.signal.aborted?'Tiempo de conexión agotado.':e.message)}).finally(()=>window.clearTimeout(timeout))
     return ()=>{disposed=true;c.abort();window.clearTimeout(timeout)}
@@ -41,7 +41,8 @@ export function useReservations(revision:number,socketConnected:boolean){
     return ()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',visible);window.removeEventListener('pageshow',sync);window.removeEventListener('online',sync)}
   },[socketConnected,publicError])
   useEffect(()=>{
-    if(!snapshot?.retenciones.length)return
+    if(!snapshot)return
+    // Actualiza inicio y fin de reservas aun sin eventos de red.
     const timer=window.setInterval(()=>tick(n=>n+1),500)
     return ()=>window.clearInterval(timer)
   },[snapshot])

@@ -986,3 +986,6 @@
   .parking-v2-slot.reserved .parking-v2-reserved-lock svg{width:13px;height:13px}
   .parking-v2-reserved-label{font-size:10px;bottom:5px}
 }
+
+/* Reserva futura: conserva la tarjeta libre y su botón, sin simular un auto presente. */
+.parking-v2-future{display:block;font-size:.82em;font-weight:650;line-height:1.15;margin-top:2px;color:#235a70}

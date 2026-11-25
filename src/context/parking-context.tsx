@@ -1,9 +1,10 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { createDemo, demoSchema, displayStatus, payDemoTicket, reservationStatus, spaceCodes, validateBooking, type BookingInput, type DemoState, type Space } from '@/lib/model'
+import { createDemo, demoSchema, payDemoTicket, reservationStatus, spaceCodes, validateBooking, type BookingInput, type DemoState, type Space } from '@/lib/model'
 import { isLiveOccupancy, unknownSpaces } from '@/services/parking'
 import { useAuth } from '@/context/auth-context'
 import { useReservations } from '@/hooks/use-reservations'
 import { useParking } from '@/hooks/use-parking'
+import { liveSpaceStatus } from '@/services/reservations'
 
 // El modo de cuentas no utiliza saldos, pagos ni reservas locales compartidos.
 const isDemo = false
@@ -46,11 +47,7 @@ function useStore() {
   const confirmed = isLiveOccupancy ? online && real.connection === 'online' : !simulatedOffline
   const spaces: Space[] = !confirmed ? unknownSpaces() : isLiveOccupancy ? real.spaces : spaceCodes.map((id, i) => ({ id, occupancy: demo.occupancy[i], updatedAt: now.toISOString() }))
   const reservations = booking.reservations
-  const statusOf = (space: Space) => {
-    const physical=displayStatus(space,[],now)
-    if(physical!=='free')return physical
-    return booking.snapshot?.reservas.some(r=>r.plaza===space.id&&Date.parse(r.fechaFin)>booking.serverNow)?'reserved':physical
-  }
+  const statusOf = (space: Space) => liveSpaceStatus(space,booking.snapshot,booking.serverNow,confirmed&&booking.ready)
   const stats = { free: 0, occupied: 0, reserved: 0, unknown: 0 }
   spaces.forEach(s => {const status=statusOf(s);stats[status==='free'&&booking.publicHold(s.id)?'reserved':status]++})
   function book(input: BookingInput) {
