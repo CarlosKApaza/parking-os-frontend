@@ -28,7 +28,7 @@ export function useParking() {
     let pending = new Map<Space['id'], Space>()
     const socket = io(parkingSocketUrl(), {
       path: '/socket.io',
-      transports: ['polling','websocket'],
+      transports: ['websocket'],
       autoConnect: false,
       reconnection: true,
       timeout: 5000,
@@ -113,7 +113,7 @@ export function useParking() {
       else void sync()
     }
 
-    const onReservation=()=>{if(!disposed){if(import.meta.env.DEV)console.info('[Parking OS] WS reservas.actualizadas');setReservationRevision(n=>n+1)}}
+    const onReservation=()=>{if(!disposed){if(import.meta.env.DEV)console.info('[Parking OS] WS reservas.actualizadas');setReservationRevision(n=>n+1);void sync()}}
     const resume=()=>{if(disposed||document.visibilityState==='hidden')return;if(!socket.connected)socket.connect();setReservationRevision(n=>n+1);void sync()}
     document.addEventListener('visibilitychange',resume)
     window.addEventListener('online',resume)
