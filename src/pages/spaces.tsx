@@ -5,8 +5,8 @@ import { CalendarDays, Check, Clock3, Plus, X } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { Modal } from '@/components/ui/dialog'
 import { type SpaceCode, statusLabels } from '@/lib/model'
-import { money, localDate, tomorrow, dateLabel } from '@/lib/utils'
-import { interval,overlap,reservedWindows,boliviaFields,type Hold } from '@/services/reservations'
+import { money, dateLabel } from '@/lib/utils'
+import { interval,overlap,reservedWindows,boliviaFields,quickReservation,reservationEnd,type Hold } from '@/services/reservations'
 import type { Vehiculo } from '@/services/auth'
 import { carDirection } from '@/lib/car-direction'
 
@@ -36,7 +36,7 @@ export function SpacesPage() {
   const [modalOpen,setModalOpen]=useState(false)
   const [viewReserved,setViewReserved]=useState(false)
   const [showAgenda,setShowAgenda]=useState(false)
-  const [date,setDate]=useState(tomorrow),[from,setFrom]=useState('09:00'),[to,setTo]=useState('11:00')
+  const [date,setDate]=useState(()=>quickReservation(booking.serverNow).date),[from,setFrom]=useState(()=>quickReservation(booking.serverNow).from),[to,setTo]=useState(()=>quickReservation(booking.serverNow).to)
   const [error,setError]=useState(''),[busy,setBusy]=useState(false),[hold,setHold]=useState<Hold|null>(null),[remaining,setRemaining]=useState(0)
   const [vehicles,setVehicles]=useState<Vehiculo[]>([]),[vehicle,setVehicle]=useState('')
   const currentHold=useRef<Hold|null>(null),alive=useRef(true),operation=useRef(0),releaseRef=useRef<(token:string)=>void>(()=>{})
@@ -57,6 +57,7 @@ export function SpacesPage() {
   const dates=interval(date,from,to),minutes=(Date.parse(dates.fechaFin)-Date.parse(dates.fechaInicio))/60000
   const total=Number.isFinite(minutes)&&minutes>0?minutes*DEMO_RATE_BS/60:0
   const validation=Date.parse(dates.fechaInicio)<=booking.serverNow||!Number.isFinite(minutes)||minutes<=0?'Elige un horario futuro y válido.':booking.snapshot?.reservas.some(r=>r.plaza===selected&&overlap(dates.fechaInicio,dates.fechaFin,r.fechaInicio,r.fechaFin))?'La plaza ya está reservada en ese horario.':null
+  const durations=[5,10,15,30,60,120]
   const publicHold=booking.publicHold
   function closeSheet(){
     if(busy)return
@@ -71,7 +72,7 @@ export function SpacesPage() {
     const reserved=statusOf(item)==='reserved'
     const available=statusOf(item)==='free'&&confirmed&&booking.ready&&!publicHold(code)
     if(available&&!user){navigate('/login?next=%2Fespacios');return}
-    setViewReserved(reserved);setShowAgenda(false);setSelected(code);setModalOpen(true);setError('');setDate(tomorrow());setFrom('09:00');setTo('11:00');setVehicles([]);setVehicle('')
+    setViewReserved(reserved);setShowAgenda(false);setSelected(code);setModalOpen(true);setError('');const next=quickReservation(booking.serverNow);setDate(next.date);setFrom(next.from);setTo(next.to);setVehicles([]);setVehicle('')
     if(!available)return
     const epoch=++operation.current;setBusy(true)
     try{
@@ -176,7 +177,7 @@ export function SpacesPage() {
       </button>
     </div>
     <Modal open={modalOpen} onOpenChange={open => { if (!open) closeSheet() }}
-      title={selected ? 'Plaza ' + selected : 'Plaza'} description={showAgenda?'Consulta los horarios reservados de esta plaza.':reservedInfo?'Horario de reserva':canReserve?'Selecciona el horario de tu visita.':selectMessage}
+      title={selected ? 'Plaza ' + selected : 'Plaza'} description={showAgenda?'Consulta los horarios reservados de esta plaza.':reservedInfo?'Horario de reserva':canReserve?'Elige una duración corta o ajusta el horario.':selectMessage}
       contentClassName="parking-v2-sheet"
       onContentTouchStart={onTouchStart} onContentTouchMove={onTouchMove} onContentTouchEnd={onTouchEnd}
     >
@@ -202,9 +203,11 @@ export function SpacesPage() {
         {reservedTimes.length>0&&<p className="parking-v2-agenda-note">Hay {reservedTimes.length} {reservedTimes.length===1?'horario reservado':'horarios reservados'}. Consulta la pestaña Reservas antes de elegir.</p>}
         <div className="parking-v2-fields"><label htmlFor="parking-v2-vehicle">Vehículo</label><select id="parking-v2-vehicle" value={vehicle} onChange={e=>setVehicle(e.target.value)}>{vehicles.map(v=><option value={v.id} key={v.id}>{v.placa}</option>)}</select>
           <label htmlFor="parking-v2-date">Fecha</label>
-          <input id="parking-v2-date" type="date" min={localDate()} value={date} onChange={event => setDate(event.target.value)} required/>
+          <input id="parking-v2-date" type="date" min={boliviaFields(new Date(booking.serverNow).toISOString()).date} value={date} onChange={event => setDate(event.target.value)} required/>
+          <label htmlFor="parking-v2-duration">Duración rápida</label>
+          <select id="parking-v2-duration" value={durations.includes(minutes)?String(minutes):"custom"} onChange={event=>{if(event.target.value==="custom")return;const end=reservationEnd(date,from,Number(event.target.value));if(end)setTo(end)}}><option value="custom">Personalizada</option>{durations.map(n=><option key={n} value={n} disabled={!reservationEnd(date,from,n)}>{n<60?n+" min":n/60+" h"} · Bs {money(n*DEMO_RATE_BS/60)}</option>)}</select>
           <div className="parking-v2-time-row">
-            <div><label htmlFor="parking-v2-from">Hora de inicio</label><input id="parking-v2-from" type="time" value={from} onChange={event => setFrom(event.target.value)} required/></div>
+            <div><label htmlFor="parking-v2-from">Hora de inicio</label><input id="parking-v2-from" type="time" value={from} onChange={event => {const value=event.target.value;setFrom(value);const end=reservationEnd(date,value,durations.includes(minutes)?minutes:5);if(end)setTo(end)}} required/></div>
             <div><label htmlFor="parking-v2-to">Hora de salida</label><input id="parking-v2-to" type="time" value={to} onChange={event => setTo(event.target.value)} required/></div>
           </div>
         </div>

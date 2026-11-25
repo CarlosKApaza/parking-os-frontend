@@ -11,6 +11,25 @@ export function toReservation(r:RemoteReservation):Reservation{
   return {id:r.codigo,space:r.estacionamiento.codigo,date:a.date,from:a.time,to:b.time,status:['PENDIENTE','CONFIRMADA','EN_USO'].includes(r.estado)?'active':r.estado==='FINALIZADA'?'completed':'cancelled'}
 }
 export function interval(date:string,from:string,to:string){return {fechaInicio:date+'T'+from+':00-04:00',fechaFin:date+'T'+to+':00-04:00'}}
+// Horarios de feria: reloj del servidor, zona Bolivia y minutos completos.
+export function reservationEnd(date:string,from:string,minutes:number):string|null {
+  const start=Date.parse(interval(date,from,from).fechaInicio)
+  if(!Number.isFinite(start)||!Number.isInteger(minutes)||minutes<=0)return null
+  const end=boliviaFields(new Date(start+minutes*60000).toISOString())
+  return end.date===date?end.time:null
+}
+export function quickReservation(serverNow:number,minutes=5){
+  // Entre uno y dos minutos de margen para confirmar antes de empezar.
+  let start=(Math.ceil(serverNow/60000)+1)*60000
+  let fields=boliviaFields(new Date(start).toISOString())
+  let to=reservationEnd(fields.date,fields.time,minutes)
+  if(!to){
+    start=Date.parse(fields.date+'T00:00:00-04:00')+86400000
+    fields=boliviaFields(new Date(start).toISOString())
+    to=reservationEnd(fields.date,fields.time,minutes)
+  }
+  return {date:fields.date,from:fields.time,to:to??'23:59'}
+}
 export function overlap(a:string,b:string,c:string,d:string){return Date.parse(a)<Date.parse(d)&&Date.parse(b)>Date.parse(c)}
 
 /** El servidor decide la vigencia. El reloj del teléfono puede estar adelantado. */

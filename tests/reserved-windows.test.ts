@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest'
-import {reservedWindows,type Availability} from '../src/services/reservations'
+import {reservedWindows,quickReservation,reservationEnd,type Availability} from '../src/services/reservations'
 describe('horarios públicos de una plaza',()=>{
  const snapshot:Availability={servidorAhora:'2026-11-24T20:00:00Z',retenciones:[],reservas:[
  {plaza:'P1',fechaInicio:'2026-11-25T15:00:00Z',fechaFin:'2026-11-25T16:00:00Z'},
@@ -12,5 +12,16 @@ describe('horarios públicos de una plaza',()=>{
  it('sin datos o tras vencer no muestra horarios',()=>{
   expect(reservedWindows(null,'P1',0)).toEqual([])
   expect(reservedWindows(snapshot,'P1',Date.parse('2026-11-25T16:00:00Z'))).toEqual([])
+ })
+})
+
+describe('reserva rapida en hora de Bolivia',()=>{
+ it('empieza hoy con margen y calcula cinco minutos',()=>{
+  expect(quickReservation(Date.parse('2026-11-25T16:24:15Z'))).toEqual({date:'2026-11-25',from:'12:26',to:'12:31'})
+ })
+ it('calcula duracion sin cruzar medianoche',()=>{
+  expect(reservationEnd('2026-11-25','12:26',30)).toBe('12:56')
+  expect(reservationEnd('2026-11-25','23:58',5)).toBeNull()
+  expect(quickReservation(Date.parse('2026-11-26T03:58:15Z'))).toEqual({date:'2026-11-26',from:'00:00',to:'00:05'})
  })
 })
