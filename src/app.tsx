@@ -6,6 +6,7 @@ import { Layout } from '@/components/layout'
 import { HomePage } from '@/pages/home'
 import { SpacesPage } from '@/pages/spaces'
 import { BookingPage, ReservationsPage } from '@/pages/reservations'
+import { ExitTerminal } from '@/pages/exit-terminal'
 import { LivePaymentPage } from '@/pages/live-payments'
 import { PaymentPage } from '@/pages/payment'
 import { PaymentHistoryPage } from '@/pages/payment-history'
@@ -19,6 +20,7 @@ import { MapPin } from 'lucide-react'
 export default function App() {
   return <BrowserRouter><MotionConfig reducedMotion="user"><AuthProvider><ParkingProvider><Routes>
     <Route path="inicio-carga" element={<SplashPage/>}/><Route path="bienvenida" element={<WelcomePage/>}/><Route path="login" element={<AuthPage key="login"/>}/><Route path="registro" element={<AuthPage key="register" register/>}/>
+    <Route path="garita/salida" element={<ExitTerminal/>}/>
     <Route element={<Layout/>}>
     <Route index element={<InitialHome><HomePage/></InitialHome>}/><Route path="espacios" element={<SpacesPage/>}/><Route path="reservar" element={<RequireAuth><BookingPage/></RequireAuth>}/><Route path="reservas" element={<RequireAuth><ReservationsPage/></RequireAuth>}/><Route path="billetera" element={<RequireAuth><RealWalletPage/></RequireAuth>}/><Route path="pago" element={<PaymentPage/>}/><Route path="pago-invitado" element={<LivePaymentPage/>}/><Route path="seguridad" element={<SecurityPage/>}/><Route path="perfil" element={<ProfilePage/>}/><Route path="perfil/pagos" element={<RequireAuth><PaymentHistoryPage/></RequireAuth>}/><Route path="vehiculos" element={<RequireAuth><VehiclesPage/></RequireAuth>}/>
     <Route path="*" element={<EmptyState icon={<MapPin size={34}/>} title="Este camino no lleva a una plaza" action={<Button asChild><Link to="/">Volver al inicio</Link></Button>}>La página que buscas no está disponible.</EmptyState>}/>
