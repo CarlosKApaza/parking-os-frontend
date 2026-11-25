@@ -44,7 +44,7 @@ function useStore() {
     current.current = next; setDemo(next)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)) } catch { setNotice('Los cambios duran esta sesión: el almacenamiento local no está disponible.') }
   }
-  const confirmed = isLiveOccupancy ? online && real.connection === 'online' : !simulatedOffline
+  const confirmed = isLiveOccupancy ? real.connection === 'online' : !simulatedOffline
   const spaces: Space[] = !confirmed ? unknownSpaces() : isLiveOccupancy ? real.spaces : spaceCodes.map((id, i) => ({ id, occupancy: demo.occupancy[i], updatedAt: now.toISOString() }))
   const reservations = booking.reservations
   const statusOf = (space: Space) => liveSpaceStatus(space,booking.snapshot,booking.serverNow,confirmed&&booking.ready)
@@ -58,7 +58,7 @@ function useStore() {
     setNotice(`Reserva de prueba ${id} creada`)
     return id
   }
-  return { booking, demo, update, now, isDemo, isLiveOccupancy, spaces, reservations, statusOf, stats, confirmed, online, notice, setNotice,
+  return { booking, demo, update, now, isDemo, isLiveOccupancy, spaces, reservations, statusOf, stats, confirmed, online: isLiveOccupancy ? confirmed || online : online, notice, setNotice,
     connectionMessage: isLiveOccupancy ? real.message : simulatedOffline ? 'Simulación sin señal. Las plazas no están confirmadas.' : 'Datos de demostración',
     reconnect: isLiveOccupancy ? real.reconnect : () => setSimulatedOffline(false),
     simulatedOffline, setSimulatedOffline, book,

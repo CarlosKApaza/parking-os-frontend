@@ -6,7 +6,7 @@ import type { Space } from '@/lib/model'
 const EVENT = 'estacionamiento.actualizado'
 
 // REST para estado inicial y recuperación; WebSocket para las lecturas vivas.
-// El polling de 3 s queda exclusivamente como respaldo si no hay socket sano.
+// REST reconcilia periódicamente aun con socket activo, para móviles en redes locales.
 export function useParking() {
   const [spaces, setSpaces] = useState<Space[]>(unknownSpaces)
   const [connection, setConnection] = useState<'connecting' | 'online' | 'offline'>('connecting')
@@ -21,12 +21,14 @@ export function useParking() {
     let disposed = false
     let current = unknownSpaces()
     let ready = false
+    let clock: {serverMs:number;receivedAt:number}|null = null
+    const serverNow=()=>clock?clock.serverMs+Math.max(0,performance.now()-clock.receivedAt):Date.now()
     let generation = 0
     let controller: AbortController | null = null
     let pending = new Map<Space['id'], Space>()
     const socket = io(parkingSocketUrl(), {
       path: '/socket.io',
-      transports: ['websocket'],
+      transports: ['polling','websocket'],
       autoConnect: false,
       reconnection: true,
       timeout: 5000,
@@ -55,13 +57,15 @@ export function useParking() {
       controller = request
       const timeout = window.setTimeout(() => request.abort(), 8000)
       try {
-        let latest = await getSpaces(request.signal)
+        const sample = await getSpaces(request.signal)
         if (disposed || epoch !== generation) return
+        clock={serverMs:sample.serverMs,receivedAt:sample.receivedAt}
+        let latest=sample.spaces
         // Los eventos recibidos durante el GET pueden ser posteriores a la foto inicial.
         for (const incoming of pending.values()) latest = mergeSpace(latest, incoming)
         pending.clear()
         ready = true
-        publish(refreshSpaceFreshness(latest))
+        publish(refreshSpaceFreshness(latest,serverNow()))
         status()
       } catch {
         if (disposed || epoch !== generation) return
@@ -77,14 +81,14 @@ export function useParking() {
 
     function onReading(payload: unknown) {
       if (disposed) return
-      const incoming = parseSpace(payload)
+      const incoming = parseSpace(payload,serverNow())
       if (!incoming) return
       if (!ready || controller) {
         const previous = pending.get(incoming.id)
         pending.set(incoming.id, previous ? mergeSpace([previous], incoming)[0] : incoming)
       }
       if (ready) {
-        publish(refreshSpaceFreshness(mergeSpace(current, incoming)))
+        publish(refreshSpaceFreshness(mergeSpace(current, incoming),serverNow()))
         status()
       }
     }
@@ -92,20 +96,14 @@ export function useParking() {
       if (disposed) return
       setSocketConnected(true);setReservationRevision(n=>n+1)
       if(import.meta.env.DEV)console.info('[Parking OS] Socket.IO conectado',socket.id,parkingSocketUrl())
-      ready = false
-      pending.clear()
-      setConnection('connecting')
-      setMessage('Sincronizando disponibilidad con NestJS…')
-      void sync(true)
+      if(!ready){setConnection('connecting');setMessage('Sincronizando disponibilidad con NestJS…')}
+      void sync()
     }
     function onDisconnect() {
       if (disposed) return
       setSocketConnected(false);setReservationRevision(n=>n+1)
-      ready = false
-      pending.clear()
-      setConnection('connecting')
-      setMessage('Recuperando disponibilidad por REST…')
-      void sync(true)
+      if(ready)status();else {setConnection('connecting');setMessage('Recuperando disponibilidad por REST…')}
+      void sync()
     }
     function onConnectError(error:Error) {
       if (disposed) return
@@ -116,7 +114,7 @@ export function useParking() {
     }
 
     const onReservation=()=>{if(!disposed){if(import.meta.env.DEV)console.info('[Parking OS] WS reservas.actualizadas');setReservationRevision(n=>n+1)}}
-    const resume=()=>{if(disposed||document.visibilityState==='hidden')return;if(!socket.connected)socket.connect();setReservationRevision(n=>n+1);void sync(true)}
+    const resume=()=>{if(disposed||document.visibilityState==='hidden')return;if(!socket.connected)socket.connect();setReservationRevision(n=>n+1);void sync()}
     document.addEventListener('visibilitychange',resume)
     window.addEventListener('online',resume)
     window.addEventListener('pageshow',resume)
@@ -129,12 +127,12 @@ export function useParking() {
     socket.connect()
 
     const fallback = window.setInterval(() => {
-      if (!socket.connected || !ready) void sync()
+      void sync()
     }, pollingIntervalMs)
     // Temporizador local (sin red) para señalar lecturas antiguas aun sin eventos.
     const freshness = window.setInterval(() => {
       if (!ready) return
-      const next = refreshSpaceFreshness(current)
+      const next = refreshSpaceFreshness(current,serverNow())
       if (next !== current) publish(next)
     }, 5000)
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createDemo, demoPaymentHistory, displayStatus, payDemoTicket, reservationStatus, validateBooking, type Reservation, type Space } from '../src/lib/model'
-import { mergeSpace, parseSnapshot, parseSpace, refreshSpaceFreshness } from '../src/services/parking'
+import { mergeSpace, parseSnapshot, parseSpace, refreshSpaceFreshness, spacesEndpoint } from '../src/services/parking'
 
 const space: Space = { id: 'P1', occupancy: 'FREE', updatedAt: '2026-10-11T10:00:00Z', sequence: 5 }
 const now = new Date('2026-10-11T09:00:00')
@@ -114,5 +114,18 @@ describe('antigüedad de sensores sin polling', () => {
   it('no cambia el arreglo si la antigüedad sigue igual', () => {
     const list = [{id:'P1',occupancy:'FREE',updatedAt:'',isStale:false,staleAt:Date.now()+90000}] as Space[]
     expect(refreshSpaceFreshness(list)).toBe(list)
+  })
+})
+
+ describe('red local y reloj del servidor',()=>{
+  it('no duplica el prefijo api',()=>{
+    expect(spacesEndpoint('/api','/api/estacionamientos')).toBe('/api/estacionamientos')
+    expect(spacesEndpoint('','/api/estacionamientos')).toBe('/api/estacionamientos')
+  })
+  it('lee disponibilidad consolidada con el tiempo de NestJS, no del móvil',()=>{
+    const server=Date.parse('2026-11-25T13:20:26Z')
+    const rows=parseSnapshot({plazas:[{codigo:'P1',estadoFisico:'LIBRE',sensorCodigo:'IR01',activo:true,ultimaLectura:'2026-11-25T13:20:00Z'}]},server)
+    expect(rows[0]).toMatchObject({occupancy:'FREE',isStale:false})
+    expect(refreshSpaceFreshness(rows,server+120000)[0].isStale).toBe(true)
   })
 })
