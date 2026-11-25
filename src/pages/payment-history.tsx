@@ -12,7 +12,10 @@ export function paymentDate(value: string) {
   return new Intl.DateTimeFormat('es-BO',{day:'numeric',month:'short',year:'numeric'}).format(date) + ' · ' + new Intl.DateTimeFormat('es-BO',{hour:'2-digit',minute:'2-digit',hour12:false}).format(date)
 }
 
-export function PaymentHistoryPage() {
+import {LiveHistoryPage} from './live-payments'
+
+export function PaymentHistoryPage(){const {isDemo}=useParkingStore();return isDemo?<DemoPaymentHistoryPage/>:<LiveHistoryPage/>}
+function DemoPaymentHistoryPage() {
   const { demo, isDemo, reservations } = useParkingStore()
   const [params, setParams] = useSearchParams()
   const payments = isDemo ? demoPaymentHistory(demo) : []

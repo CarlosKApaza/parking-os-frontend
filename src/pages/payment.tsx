@@ -7,7 +7,10 @@ import { demoExitTickets, demoPaymentHistory } from '@/lib/model'
 import { money } from '@/lib/utils'
 import { paymentDate } from './payment-history'
 
-export function PaymentPage() {
+import {LivePaymentPage} from './live-payments'
+
+export function PaymentPage(){const {isDemo}=useParkingStore();return isDemo?<DemoPaymentPage/>:<LivePaymentPage/>}
+function DemoPaymentPage() {
   const { demo, pay, isDemo } = useParkingStore()
   const [step, setStep] = useState(0)
   const [ticket, setTicket] = useState('')

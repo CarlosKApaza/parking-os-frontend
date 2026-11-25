@@ -42,7 +42,7 @@ export default defineConfig({
         ws: true,
         changeOrigin: true,
       },
-      '^/api/(auth|usuarios|vehiculos|reservas)(/|$)': {
+      '^/api/(auth|usuarios|vehiculos|reservas|pagos)(/|$)': {
         target: 'http://127.0.0.1:3000',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, ''),
