@@ -989,3 +989,19 @@
 
 /* Reserva futura: conserva la tarjeta libre y su botón, sin simular un auto presente. */
 .parking-v2-future{display:block;font-size:.82em;font-weight:650;line-height:1.15;margin-top:2px;color:#235a70}
+
+/* Coche gris para reserva futura: disponible, sin candado. */
+.parking-v2-slot.future-reservation{border-color:#459cd0;background:linear-gradient(145deg,#17465c,#103040)}
+.parking-v2-slot.future-reservation .parking-v2-reserved-lock{background:#123b4e;border-color:#76b7d76b;color:#c7effb}
+.parking-v2-slot.future-reservation .parking-v2-reserved-label{color:#c9fbe6}
+.parking-v2-reserved-label small{display:block;font-size:.88em;font-weight:650;margin-top:2px;color:#c1dbe7}
+.parking-v2-agenda-nav{display:flex;justify-content:space-between;gap:8px;margin:10px 0 13px;padding:4px;border:1px solid #426272;border-radius:12px;background:#10252f}
+.parking-v2-agenda-nav button{display:flex;flex:1;align-items:center;justify-content:center;gap:6px;min-height:35px;border:0;border-radius:8px;background:transparent;color:#b7ccd5;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.parking-v2-agenda-nav button[aria-pressed=true]{background:#284a5d;color:#e4f7fc}
+.parking-v2-agenda-nav button span{min-width:19px;padding:2px 4px;border-radius:9px;background:#173747;color:#a5e9da;font-size:10px}
+.parking-v2-agenda-nav button:focus-visible{outline:2px solid #a5e9da;outline-offset:2px}
+.parking-v2-agenda{display:grid;gap:12px;color:#d9e9ee}
+.parking-v2-agenda-list{display:grid;gap:8px;max-height:40dvh;overflow-y:auto;overscroll-behavior:contain;padding-right:3px;touch-action:pan-y}
+.parking-v2-agenda-list h3{font-size:12px;font-weight:750;color:#a8d4dc;margin:8px 0 6px}
+.parking-v2-agenda-timer{display:flex;align-items:center;gap:6px;font-size:12px;color:#a5f3d3}
+.parking-v2-agenda-note{font-size:12px;color:#b8cfd8;margin:0 0 8px}

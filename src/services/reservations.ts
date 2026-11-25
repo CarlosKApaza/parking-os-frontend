@@ -74,3 +74,8 @@ export function liveSpaceStatus(space:Space,snapshot:Availability|null,serverNow
   if(!ready||!snapshot)return 'unknown'
   return snapshot.reservas.some(r=>r.plaza===space.id&&Date.parse(r.fechaInicio)<=serverNow&&serverNow<Date.parse(r.fechaFin))?'reserved':'free'
 }
+
+/** Plazas distintas con reservas actuales o futuras; no es un contador de ocupación. */
+export function countSpacesWithReservations(snapshot:Availability|null,serverNow:number):number {
+  return new Set((snapshot?.reservas??[]).filter(r=>Date.parse(r.fechaFin)>serverNow).map(r=>r.plaza)).size
+}

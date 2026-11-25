@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, Camera, CarFront, CalendarDays, Coins, Crown, LockKeyhole, ParkingSquare, Plus, RadioTower, ScanLine, Wallet, WifiOff } from 'lucide-react'
 import { useParkingStore } from '@/context/parking-context'
 import { money } from '@/lib/utils'
+import { countSpacesWithReservations } from '@/services/reservations'
 
 export function WalletCard({ full = false }: { full?: boolean }) {
   const { demo, isDemo } = useParkingStore()
@@ -10,7 +11,7 @@ export function WalletCard({ full = false }: { full?: boolean }) {
 
 
 export function HomePage() {
-  const { stats, spaces, confirmed, isLiveOccupancy } = useParkingStore()
+  const { stats, spaces, confirmed, isLiveOccupancy, booking } = useParkingStore()
   const total = spaces.length
   const staleCount = isLiveOccupancy
     ? spaces.filter(space => space.isStale && space.occupancy !== 'UNKNOWN').length
@@ -19,7 +20,7 @@ export function HomePage() {
   const counters = [
     { label: 'Ocupados', value: stats.occupied, Icon: CarFront, color: 'occupied' },
     { label: 'Sin confirmar', value: stats.unknown, Icon: LockKeyhole, color: 'unknown' },
-    { label: 'Reservados', value: stats.reserved, Icon: CalendarDays, color: 'reserved' },
+    { label: 'Con reserva', value: countSpacesWithReservations(booking.snapshot,booking.serverNow), Icon: CalendarDays, color: 'reserved' },
   ]
 
   return <div className="home-overview home-landing">
@@ -58,10 +59,10 @@ export function HomePage() {
 
     <section className="home-landing-stats" aria-label="Resumen del estacionamiento">
       {counters.map(({ label, value, Icon, color }) =>
-        <article key={label} className={'home-landing-stat ' + color}>
+        <article key={label} className={'home-landing-stat ' + color} title={color==='reserved'?'Plazas con reservas vigentes o futuras (pueden estar libres ahora)':undefined}>
           <span className="home-landing-stat-icon"><Icon size={18}/></span>
           <span className="home-landing-stat-label">{label}</span>
-          <strong>{confirmed ? String(value).padStart(2, '0') : '—'}</strong>
+          <strong>{(color==='reserved'?booking.ready:confirmed) ? String(value).padStart(2, '0') : '—'}</strong>
         </article>)}
     </section>
 

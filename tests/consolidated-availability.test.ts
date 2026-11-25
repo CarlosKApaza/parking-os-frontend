@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest'
-import {parseConsolidatedAvailability,liveSpaceStatus,overlap,activePublicHold} from '../src/services/reservations'
+import {parseConsolidatedAvailability,liveSpaceStatus,overlap,activePublicHold,countSpacesWithReservations} from '../src/services/reservations'
 import {spaceCodes,type Space} from '../src/lib/model'
 
 const now='2026-11-25T06:58:00Z'
@@ -42,5 +42,15 @@ describe('disponibilidad consolidada en la PWA',()=>{
     expect(()=>parseConsolidatedAvailability(incomplete)).toThrow()
     const duplicate=fixture();duplicate.plazas[1].codigo='P1'
     expect(()=>parseConsolidatedAvailability(duplicate)).toThrow()
+  })
+})
+
+describe('contador de plazas con reserva',()=>{
+  it('incluye reservas futuras y cuenta cada plaza solo una vez',()=>{
+    const snapshot=parseConsolidatedAvailability(fixture())
+    snapshot.reservas.push({plaza:'P1',fechaInicio:'2026-11-26T10:00:00Z',fechaFin:'2026-11-26T11:00:00Z'},{plaza:'P3',fechaInicio:start,fechaFin:end})
+    expect(countSpacesWithReservations(snapshot,Date.parse(now))).toBe(2)
+    expect(countSpacesWithReservations(snapshot,Date.parse(end))).toBe(1)
+    expect(countSpacesWithReservations(null,Date.parse(now))).toBe(0)
   })
 })
