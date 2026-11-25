@@ -97,7 +97,7 @@ export function SpacesPage() {
   function onTouchStart(event: TouchEvent<HTMLDivElement>) {
     if (!window.matchMedia('(max-width: 760px)').matches) return
     const target = event.target as HTMLElement
-    if (target.closest('input, select, textarea, button')) return
+    if (target.closest('input, select, textarea, button, .parking-v2-agenda-list')) return
     if (event.currentTarget.scrollTop > 0) return
     touch.current = { start: event.touches[0].clientY, delta: 0 }
   }
